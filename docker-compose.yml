@@ -7,7 +7,16 @@ services:
         restart: always
         networks:
             - frontend_network
+            - backend_network
+    mariadb:
+        container_name: mariadb
+        build: ./dockers/mariadb
+        restart: always
+        networks:
+            - backend_network
 
 networks:
     frontend_network:
+        driver: bridge
+    backend_network:
         driver: bridge
