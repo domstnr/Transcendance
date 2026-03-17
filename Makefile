@@ -7,6 +7,9 @@ up:
 down:
 	docker compose down
 
+status:
+	docker compose ps
+
 re: down all
 
 clean:
