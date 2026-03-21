@@ -5,14 +5,15 @@ if [ ! -s "$PGDATA/PG_VERSION" ]; then
     initdb --username=postgres --pwfile=<(echo "$POSTGRES_PASSWORD")
     echo "Database cluster initialized."
 
-        echo "Starting PostgreSQL temporarily for setup..."
+    echo "Starting PostgreSQL temporarily for setup..."
     postgres &
     POSTGRES_PID=$!
     
     # Wait for PostgreSQL to be ready
     sleep 2
     
-    #THIS DOESNT WORK, ITS JUST COPY PASTE FROM AI TO KNOW HOW IT *COULD* WORK
+#=====THIS DOESNT WORK, ITS JUST COPY PASTE FROM AI TO KNOW HOW IT *COULD* WORK=====
+
 #    echo "Creating sample database and tables..."
 #    psql -U postgres -d postgres <<EOF
 #CREATE DATABASE myapp;
