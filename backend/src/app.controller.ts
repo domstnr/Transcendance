@@ -7,6 +7,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    return "Transendence let's goooooo!";
+    return this.appService.getHello();
   }
 }

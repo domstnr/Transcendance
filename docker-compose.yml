@@ -1,7 +1,9 @@
 services:
     nestjs:
         container_name: nestjs
-        build: ./dockers/nestjs
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.prod
         ports:
             - 3000:3000
         restart: always
@@ -11,6 +13,65 @@ services:
         container_name: postgresql
         build: ./dockers/postgresql
         restart: always
+        networks:
+            - frontend_network
+
+    # --- New services appended below (existing services above not modified) ---
+
+    backend:
+        container_name: backend
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        ports:
+            - "3001:3001"
+        volumes:
+            - ./backend:/app
+            - /app/node_modules
+        environment:
+            - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
+            - REDIS_URL=${REDIS_URL}
+            - JWT_SECRET=${JWT_SECRET}
+            - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+            - PORT=3001
+        depends_on:
+            postgresql:
+                condition: service_started
+            redis:
+                condition: service_healthy
+        restart: always
+        networks:
+            - frontend_network
+
+    frontend:
+        container_name: frontend
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        ports:
+            - "5173:5173"
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        environment:
+            - VITE_API_URL=http://localhost:3001
+        depends_on:
+            - backend
+        restart: always
+        networks:
+            - frontend_network
+
+    redis:
+        container_name: redis
+        image: redis:7-alpine
+        ports:
+            - "6379:6379"
+        restart: always
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
         networks:
             - frontend_network
 
