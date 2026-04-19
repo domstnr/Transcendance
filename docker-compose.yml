@@ -7,12 +7,20 @@ services:
         restart: always
         networks:
             - frontend_network
+        depends_on:
+          postgresql:
+            condition: service_healthy
     postgresql:
         container_name: postgresql
         build: ./dockers/postgresql
         restart: always
         networks:
             - frontend_network
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U postgres"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
 
 networks:
     frontend_network:

@@ -15,7 +15,7 @@ RUN chmod +x /usr/local/bin/initdb.sh
 EXPOSE 5432
 
 ENV PGDATA=/var/lib/postgresql/data
-ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_PASSWORD=postgresql
 
 STOPSIGNAL SIGINT
 
