@@ -4,6 +4,9 @@ services:
         build: ./dockers/nestjs
         ports:
             - 3000:3000
+        command: npm run start:dev
+        volumes:
+          - .:/usr/src/app
         restart: always
         networks:
             - frontend_network

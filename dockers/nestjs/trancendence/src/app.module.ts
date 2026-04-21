@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-
+import { BiddingController } from './modules/bidding/bidding.controller';
+import { EventModule } from './core/bus/event.module';
+import { PlaceBidHandler } from './modules/bidding/handlers/place-bid.handler';
+import { AuctionRepository } from './modules/bidding/auction.repository';
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [EventModule],
+  controllers: [BiddingController],
+  providers: [PlaceBidHandler, AuctionRepository],
 })
 export class AppModule {}
