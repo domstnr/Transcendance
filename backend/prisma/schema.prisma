@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+
+model Bid {
+  id          String  @id @default(uuid())
+  auctionId   String
+  userId      String
+  amount      Float
+  status      String  // 'ACCEPTED', 'REJECTED', etc.
+  createdAt   DateTime  @default(now())
+
+  auction     Auction   @relation(fields: [auctionId], references:  [id])
+}
+
+model Auction{
+  id              String    @id
+  currentPrice    Float
+  highestBidderId String?
+  status          String    @default("OPEN") //CLOSED OR OPEN
+  version         Int       @default(0)
+  endDate         DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  bids            Bid[]
+}
+
+model User {
+  id          String  @id @default(uuid())
+  username    String  @unique
+  email       String  @unique
+  password    String //just the hash bcrypt, no password
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

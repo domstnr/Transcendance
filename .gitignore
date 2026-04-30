@@ -6,6 +6,19 @@
 # Dependencies
 node_modules/
 
+# Build outputs
+dist/
+coverage/
+*.tsbuildinfo
+
+# Prisma / generated
+src/generated/
+prisma/generated/
+backend/prisma/dev.db
+backend/prisma/*.db-journal
+backend/prisma/*.db-wal
+backend/prisma/*.db-shm
+
 # OS
 .DS_Store
 Thumbs.db
@@ -15,3 +28,7 @@ Thumbs.db
 .idea/
 *.suo
 *.sw?
+
+# Local tooling / notes
+.codex/
+doc.txt

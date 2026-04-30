@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
+    "module": "Commonjs",
+    "moduleResolution": "node",
+    //resolvePackageJsonExports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
     "declaration": true,
@@ -12,8 +12,11 @@
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
     "sourceMap": true,
-    "outDir": "./dist",
+    "types": ["node", "jest"],
     "baseUrl": "./",
+    "outDir": "./dist",
+    "rootDir": "src",
+    "ignoreDeprecations": "5.0",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -21,5 +24,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -1,15 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { AuctionModule } from './auction/auction.module';
-import { BidsModule } from './bids/bids.module';
-import { ChatModule } from './chat/chat.module';
-
+import { EventModule } from './core/bus/event.module';
+import { BiddingModule } from './modules/bidding/bidding.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { PrismaModule } from './modules/bidding/prisma.module';
+import { AuthnModule } from './modules/auth/auth.module';
 @Module({
-  imports: [AuthModule, UsersModule, AuctionModule, BidsModule, ChatModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [PrismaModule, BiddingModule, EventModule, ScheduleModule.forRoot(), AuthnModule],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
