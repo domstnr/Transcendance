@@ -5,4 +5,5 @@ export interface AuctionState
     readonly highestBidderId: string | null;
     readonly status: 'OPEN' | 'CLOSED';
     readonly version: number;
+    endDate: Date;
 }

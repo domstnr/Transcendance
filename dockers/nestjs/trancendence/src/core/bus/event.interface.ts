@@ -1,8 +1,8 @@
 import { EventType } from "./event.types";
 
-export interface IEvent
+export interface IEvent<T = any>
 {
-    readonly payload: any;
+    readonly payload: T;
     readonly timestamp: number;
     readonly type : EventType;
 }

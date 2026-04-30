@@ -1,5 +1,5 @@
 import { BaseComponent } from "../../../core/bus/base.component";
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException} from "@nestjs/common";
 import { EventBus } from "../../../core/bus/event.service";
 import { BidPlacedPayload, EventType } from "../../../core/bus/event.types";
 import { AuctionState } from "../auction.state";
@@ -25,11 +25,21 @@ export class PlaceBidHandler extends BaseComponent
         //image actuelle
         const currentState = await this.auctionRepo.findById(payload.auctionId);
         
+        if (!currentState)
+        {
+            throw new NotFoundException(`Auction ${payload.auctionId} not found`);
+        }
+
+        if (currentState.status !== 'OPEN')
+        {
+            throw new BadRequestException(`Auction ${payload.auctionId} is already closed`);
+        }
+
         //invariable check rule
         if (!this.isTransitionValid(currentState, payload))
-        {console.error(`[Invariable error] bidding of ${payload.amount} denied for ${payload.auctionId}`);
-         return;
-    }
+        {
+            throw new BadRequestException(`Bidding of ${payload.amount} denied (too low)`);
+        }
         //next state(image)
         const nextState: AuctionState = {
             ...currentState, 
@@ -41,6 +51,11 @@ export class PlaceBidHandler extends BaseComponent
         await this.auctionRepo.save(nextState);
 
         console.log(`[success] Transition succeed: next image ${nextState.version}`);
+        await this.eventBus.publish({
+            type: EventType.AUCTION_UPDATED,
+            timestamp: Date.now(),
+            payload: nextState,
+        });
     }
     private isTransitionValid(s: AuctionState, event: BidPlacedPayload): boolean{
         return event.amount > s.currentPrice && s.status === 'OPEN';

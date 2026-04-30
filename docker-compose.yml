@@ -11,6 +11,13 @@ services:
         networks:
             - frontend_network
 
+    db:
+        image: postgress
+        environment:
+        POSTGRES_USER: kenny
+        POSTGRES_PASSWORD: password123
+        POSTGRES_DB: transcendance
+
 networks:
     frontend_network:
         driver: bridge

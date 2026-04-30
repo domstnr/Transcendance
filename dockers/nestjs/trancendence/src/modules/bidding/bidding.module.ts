@@ -3,6 +3,10 @@ import { BiddingController } from './bidding.controller';
 import { PlaceBidHandler } from './handlers/place-bid.handler';
 import { AuctionRepository } from './auction.repository';
 import { EventModule } from '../../core/bus/event.module';
+import { CreateAuctionHandler } from './handlers/create-auction.handler';
+import { AuctionScheduler } from './handlers/auction.scheduler';
+import { BiddingGateway } from './bidding.gateway';
+import { BidHistoryHandler } from './handlers/bid-history.handler';
 
 @Module({
   // On importe le bus pour qu'il soit accessible
@@ -13,7 +17,11 @@ import { EventModule } from '../../core/bus/event.module';
   
   // On déclare les services (le Handler et le Repository)
   providers: [
-    PlaceBidHandler, 
+    BiddingGateway,
+    BidHistoryHandler,
+    AuctionScheduler,
+    PlaceBidHandler,
+    CreateAuctionHandler, 
     AuctionRepository
   ],
 })
