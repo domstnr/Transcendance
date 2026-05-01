@@ -13,9 +13,14 @@ export class RefreshUseCase {
         private readonly tokenService: TokenService,
     ) {}
 
-    async execute(refreshDto: RefreshDto) {
+    async execute(refreshToken?: string) {
+        if (!refreshToken) {
+            this.logger.warn(`Refresh Failed... Token missing`);
+            throw new UnauthorizedException('Expired session, refresh');
+        }
+
         try {
-            const payload = await this.jwtService.verifyAsync<JwtPayload>(refreshDto.refreshToken);
+            const payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken);
             const tokens = await this.tokenService.generateTokens(payload.sub, payload.username);
             this.logger.log(`Tokens found for user : ${payload.sub}`);
             return {

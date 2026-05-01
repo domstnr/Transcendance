@@ -6,10 +6,13 @@ import {
     WebSocketServer } from "@nestjs/websockets";
 import { BaseComponent } from "../../core/bus/base.component";
 import { Server, Socket } from "socket.io";
-import { Logger } from "@nestjs/common";
+import { Logger, UseGuards } from "@nestjs/common";
 import { EventBus } from '../../core/bus/event.service';
 import { EventType } from "../../core/bus/event.types";
 import { AuctionState } from "./auction.state";
+import { WsJwtGuard } from "../auth/guards/ws-jwt.guard";
+import { AuthenticatedSocket } from "../auth/interfaces/auth-socket.interface";
+import { BidPlacedEvent } from "./events/bid-placed.event";
 
 
 
@@ -39,6 +42,25 @@ export class BiddingGateway extends BaseComponent {
             });
         });
     }
+
+    @UseGuards(WsJwtGuard)
+    @SubscribeMessage('placeBid')
+    async handlePlaceBid(
+        @MessageBody() data: { auctionId: string; amount: number },
+        @ConnectedSocket() client: AuthenticatedSocket,
+    ) {
+        await this.eventBus.publish(new BidPlacedEvent({
+            auctionId: data.auctionId,
+            userId: client.user.userId,
+            amount: data.amount,
+        }));
+
+        return {
+            status: 'success',
+            message: 'Bid authenticated & sent to queue',
+        };
+    }
+
     @SubscribeMessage('joinAuction')
     handleJoinAuction(
         @MessageBody() data: { auctionId: string},

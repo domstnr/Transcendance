@@ -1,5 +1,5 @@
 import { BaseComponent } from "../../../core/bus/base.component";
-import { Injectable, NotFoundException, BadRequestException} from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException, Logger} from "@nestjs/common";
 import { EventBus } from "../../../core/bus/event.service";
 import { BidPlacedPayload, EventType } from "../../../core/bus/event.types";
 import { AuctionState } from "../auction.state";
@@ -8,6 +8,8 @@ import { AuctionRepository } from "../auction.repository";
 @Injectable()
 export class PlaceBidHandler extends BaseComponent
 {
+    private readonly logger = new Logger(PlaceBidHandler.name);
+
     constructor(eventBus: EventBus, private readonly auctionRepo: AuctionRepository)
     {
         super(eventBus);
@@ -22,7 +24,7 @@ export class PlaceBidHandler extends BaseComponent
 
     private async transition(payload: BidPlacedPayload)
     {
-        //image actuelle
+        this.logger.log(`[Handler] New bid received for auction ${payload.auctionId}`);
         const currentState = await this.auctionRepo.findById(payload.auctionId);
         
         if (!currentState)
@@ -58,6 +60,6 @@ export class PlaceBidHandler extends BaseComponent
         });
     }
     private isTransitionValid(s: AuctionState, event: BidPlacedPayload): boolean{
-        return event.amount > s.currentPrice && s.status === 'OPEN';
+        return event.amount > (s.currentPrice || 0) && s.status === 'OPEN';
     }
 }

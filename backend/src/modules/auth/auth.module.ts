@@ -9,6 +9,7 @@ import { TokenService } from "./token.service";
 import { JwtModule } from "@nestjs/jwt";
 import { RefreshUseCase } from "./auth.refresh";
 import { JwtStrategy } from "./strategies/jwt.strategy";
+import { WsJwtGuard } from "./guards/ws-jwt.guard";
 
 
 @Module({
@@ -27,6 +28,8 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
         TokenService, 
         RefreshUseCase,
         JwtStrategy,
+        WsJwtGuard,
     ],
+    exports: [JwtModule, WsJwtGuard],
 })
 export class AuthnModule {}

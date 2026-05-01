@@ -37,7 +37,7 @@ function LoginPage() {
             setIsSubmitting(true)
             const credentials: LoginRequest = { email: trimmedEmail, password }
             const response = await login(credentials)
-            auth.login(response)
+            auth.login(response.user)
             setMessage(response.message)
             console.log('login response', response)
         } catch (error) {
