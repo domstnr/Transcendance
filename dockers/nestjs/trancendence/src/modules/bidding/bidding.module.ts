@@ -7,10 +7,11 @@ import { CreateAuctionHandler } from './handlers/create-auction.handler';
 import { AuctionScheduler } from './handlers/auction.scheduler';
 import { BiddingGateway } from './bidding.gateway';
 import { BidHistoryHandler } from './handlers/bid-history.handler';
+import { AuthnModule } from '../auth/auth.module';
 
 @Module({
   // On importe le bus pour qu'il soit accessible
-  imports: [EventModule],
+  imports: [EventModule, AuthnModule],
   
   // On déclare le Controller pour les routes HTTP
   controllers: [BiddingController],
@@ -22,7 +23,7 @@ import { BidHistoryHandler } from './handlers/bid-history.handler';
     AuctionScheduler,
     PlaceBidHandler,
     CreateAuctionHandler, 
-    AuctionRepository
+    AuctionRepository,
   ],
 })
 export class BiddingModule {}

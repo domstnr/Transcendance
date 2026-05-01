@@ -1,4 +1,4 @@
-import { Body, Req, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Req, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards, Res } from "@nestjs/common";
 import { RegisterDto } from "./dto/register.dto";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
@@ -6,7 +6,7 @@ import { LoginUseCase } from "./auth.login";
 import { RefreshDto } from "./dto/refresh.dto";
 import { RefreshUseCase } from "./auth.refresh";
 import { JwtAuthGuard } from "./strategies/jwt-auth.guard";
-import { Request } from "express";
+import { Request, Response } from "express";
 
 interface RequestWithUser extends Request {
     user: {
@@ -39,13 +39,24 @@ export class AuthController {
     async refresh(@Body() refreshDto: RefreshDto) {
         return this.refreshUseCase.execute(refreshDto);
     }
-
+  
     @Post('login')
     @HttpCode(HttpStatus.OK)
-    async login(@Body() loginDto: LoginDto) {
+    async login(@Body() loginDto: LoginDto, 
+    @Res({ passthrough: true }) res: Response) {
         console.log(`Trying to connect... ${loginDto.email}`);
+        const result = await this.loginUseCase.execute(loginDto);
+        
+        const token = result.tokens.accessToken;
 
-        return this.loginUseCase.execute(loginDto);
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 15 * 60 * 1000,
+        });
+
+        return result;
     }
 
     /* -------------------------------------------------------------------------- */
