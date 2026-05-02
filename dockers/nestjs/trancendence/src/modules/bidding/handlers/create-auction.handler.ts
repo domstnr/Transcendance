@@ -8,6 +8,7 @@ import { AuctionState } from "../auction.state";
 interface CreateAuctionPayload
 {
     id: string;
+    userId: string;
     startPrice: number;
     creatorId: string;
 }
@@ -37,6 +38,7 @@ export class CreateAuctionHandler extends BaseComponent
         }
         const  initialState: AuctionState = {
         id: payload.id,
+        sellerId: payload.userId,
         currentPrice: payload.startPrice,
         highestBidderId: null,
         status: 'OPEN',

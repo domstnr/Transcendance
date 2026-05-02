@@ -21,8 +21,7 @@ export class AuthService {
         await this.userService.checkUserExists(dto.email, dto.username);
 /*hash*/const hashedPassword = await this.passwordService.hashPassword(dto.password);
         const newUser = await this.userService.createUser(dto.email, dto.username, hashedPassword);
-
-
+        //auth Event.Bus
         await this.eventBus.publish({
             type: EventType.USER_REGISTERED,
             timestamp: Date.now(),

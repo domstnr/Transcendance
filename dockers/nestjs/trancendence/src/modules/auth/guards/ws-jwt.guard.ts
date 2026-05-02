@@ -3,7 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { WsException } from "@nestjs/websockets";
 import { AuthenticatedSocket } from "../interfaces/auth-socket.interface";
 import { JwtPayload } from "../interfaces/jwt-payload.interface";
-
+import * as cookie from 'cookie'
 /**
  * 1. Prouver l'identité de l'enchérisseur
 Sans sécurité, n'importe qui pourrait envoyer un message au serveur en disant : 
@@ -22,6 +22,44 @@ export class WsJwtGuard implements CanActivate {
     private readonly logger = new Logger(WsJwtGuard.name);
 
     constructor(private readonly jwtService: JwtService) {}
+    
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const client = context.switchToWs().getClient<AuthenticatedSocket>();
+        const rawCookies = client.handshake.headers.cookie;
+        console.log('🛡️ [Guard Debug] Tentative de message...');
+    console.log('🍪 [Guard Debug] Cookies bruts détectés :', rawCookies);
+        /**to check for secret key */
+        try {
+            if (!rawCookies) {
+                this.logger.warn('Websockets connect denied: No cookies found');
+                throw new WsException('Unauthorized: No cookies');
+            }
+            const parsedCookies = cookie.parse(rawCookies)
+            const token = parsedCookies['jwt']; //jwt is the cookie name in auth.controller.ts
+            
+            if (!token) {
+                this.logger.warn('Websocket connect denied: No jwt token in cookies');
+                throw new WsException('Unauthorized: Token missing');
+            }
+            const payload = await this.jwtService.verifyAsync<JwtPayload>(token,  {
+                secret: process.env.JWT_SECRET || 'MySecret',
+            });
+            client.user = { userId: payload.sub, username: payload.username};
+            return true;
+        } catch (err) {
+            console.log(err);
+            this.logger.warn('Connection failed: Invalid or Expired Token...');
+            throw new WsException('Unauthorized: Token invalid');
+        }
+
+    }
+}
+
+/*
+export class WsJwtGuard implements CanActivate {
+    private readonly logger = new Logger(WsJwtGuard.name);
+
+    constructor(private readonly jwtService: JwtService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const client = context.switchToWs().getClient<AuthenticatedSocket>();
@@ -36,7 +74,7 @@ export class WsJwtGuard implements CanActivate {
             throw new WsException('Unauthorized: Token missing');
         }
 
-        /**to check for secret key */
+        //to check for secret key
         try {
             const payload = await this.jwtService.verifyAsync<JwtPayload>(token,  {
                 secret: process.env.JWT_SECRET || 'MySecret',
@@ -51,3 +89,5 @@ export class WsJwtGuard implements CanActivate {
 
     }
 }
+
+*/

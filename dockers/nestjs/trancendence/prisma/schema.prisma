@@ -26,6 +26,8 @@ model Bid {
 
 model Auction{
   id              String    @id
+  sellerId        String
+  seller          User      @relation("AuctionSeller", fields: [sellerId], references: [id])
   currentPrice    Float
   highestBidderId String?
   status          String    @default("OPEN") //CLOSED OR OPEN
@@ -34,13 +36,62 @@ model Auction{
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   bids            Bid[]
+  messages        Message[]
+  participations  ChatParticipation[]
 }
 
 model User {
-  id          String  @id @default(uuid())
-  username    String  @unique
-  email       String  @unique
-  password    String //just the hash bcrypt, no password
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String  @id @default(uuid())
+  username        String  @unique
+  email           String  @unique
+  password        String //just the hash bcrypt, no password
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  //link the message to user
+  messages        Message[]
+  auctionsCreated Auction[]   @relation("AuctionSeller")
+  participations  ChatParticipation[]
+}
+
+model Message {
+  id          String @id @default(uuid())
+  content     String
+
+  //For pagination
+  createdAt   DateTime @default(now())
+
+  //We link chat
+  auctionId   String
+  auction     Auction @relation(fields: [auctionId], references: [id])
+
+  //sender
+  senderId    String
+  sender      User    @relation(fields: [senderId], references: [id])
+
+  //media handling
+  mediaUrl    String?
+
+  //price negociation
+  isOffer     Boolean @default(false)
+  offerPrice  Float?
+
+  //index for cursor pagination
+  @@index([auctionId, createdAt])
+
+}
+
+model ChatParticipation {
+  id            String  @id @default(uuid())
+
+  userId        String
+  user          User    @relation(fields: [userId], references: [id])
+
+  auctionId     String
+  auction       Auction    @relation(fields: [auctionId], references: [id])
+
+  //check lastRead
+  lastReadAt    DateTime  @default(now())
+
+  //a user can only be in one bid at DateTime
+  @@unique([userId, auctionId])
 }
