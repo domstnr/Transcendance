@@ -4,6 +4,7 @@ import Header from './shared/components/Header'
 import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
 import ProfilePage from './features/profile/ProfilePage'
+import UpdateProfilePage from './features/profile/UpdateProfilePage'
 import './App.css'
 
 function App() {
@@ -27,6 +28,14 @@ function App() {
         element={
           <ProtectedRoute>
            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/update" 
+        element={
+          <ProtectedRoute>
+           <UpdateProfilePage />
           </ProtectedRoute>
         }
       />

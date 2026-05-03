@@ -1,55 +1,57 @@
 import { useState, type FormEvent } from 'react'
-import { register } from './authService'
-import type { RegisterRequest } from './types'
+import { useAuth } from '../auth/AuthContext'
+import { updateCurrentUser } from './profileService.ts'
+import type { UpdateProfileRequest } from './types'
 
-function RegisterPage() {
+function UpdateProfilePage() {
+    const { user } = useAuth()
     const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
     const [username, setUsername] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [message, setMessage] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    if (!user) {
+        return <p>Loading profile...</p>
+    }
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         setError(null)
         setMessage(null)
 
+        const trimmedUsername = username.trim()
         const trimmedEmail = email.trim()
 
-        if (!trimmedEmail) {
-            setError('Email is required.')
+        if (!trimmedUsername && !trimmedEmail) {
+            setError('Provide at least one field to update.')
             return
         }
 
-        if (!trimmedEmail.includes('@')) {
+        if (trimmedEmail && !trimmedEmail.includes('@')) {
             setError('Enter a valid email address.')
-            return
-        }
-
-        if (!password) {
-            setError('Password is required.')
             return
         }
 
         try {
             setIsSubmitting(true)
-            const credentials: RegisterRequest = { email: trimmedEmail, username, password }
-            const response = await register(credentials)
+            const updateData: UpdateProfileRequest = {
+                ...(trimmedUsername ? { username: trimmedUsername } : {}),
+                ...(trimmedEmail ? { email: trimmedEmail } : {}),
+            }
+            const response = await updateCurrentUser(updateData)
             setMessage(response.message)
-            console.log('register response', response)
+            console.log('update profile response', response)
         } catch (error) {
-            console.log('register error', error)
-            setError('register request failed. Check the console and network tab for details.')
+            console.log('update profile error', error)
+            setError('update request failed. Check the console and network tab for details.')
         } finally {
             setIsSubmitting(false)
         }
     }
-
     return (
-      <div>
-        <h1>Register</h1>
-
+        <section>
+        <h1>Update profile</h1>
         <form onSubmit={handleSubmit} noValidate>
           <div>
             <label htmlFor="username">Username</label>
@@ -73,26 +75,14 @@ function RegisterPage() {
             />
           </div>
 
-          <div>
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="current-password"
-            />
-          </div>
-
           {error ? <p>{error}</p> : null}
           {message ? <p>{message}</p> : null}
 
           <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
+            {isSubmitting ? 'updating...' : 'update'}
           </button>
         </form>
-      </div>
+        </section>
     )
-  }
-
-  export default RegisterPage
+}
+export default UpdateProfilePage
