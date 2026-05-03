@@ -38,6 +38,7 @@ export class BiddingGateway extends BaseComponent {
             this.server.to(state.id).emit('bidUpdated', {
                 newPrice: state.currentPrice,
                 bidderId: state.highestBidderId,
+                bidderName: state.highestBidderName || 'A user',
                 timestamp: new Date(),
             });
         });
@@ -59,6 +60,7 @@ export class BiddingGateway extends BaseComponent {
       await this.eventBus.publish(new BidPlacedEvent({
         auctionId: data.auctionId,
         userId: user.userId, // On utilise le VRAI ID cryptographique, pas celui du body
+        username: user.username,
         amount: data.amount,
       }));
 

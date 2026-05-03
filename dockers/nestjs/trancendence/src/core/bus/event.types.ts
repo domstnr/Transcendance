@@ -16,6 +16,7 @@ export interface BidPlacedPayload {
   auctionId: string;
   amount: number;
   userId: string;
+  username: string;
 }
 export interface ChatMessageSentPayload {
   messageId: string;

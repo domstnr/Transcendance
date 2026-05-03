@@ -41,6 +41,7 @@ export class CreateAuctionHandler extends BaseComponent
         sellerId: payload.userId,
         currentPrice: payload.startPrice,
         highestBidderId: null,
+        highestBidderName: payload.userId,
         status: 'OPEN',
         version: 0,
         endDate : new Date(Date.now() + 2 * 60000),

@@ -26,12 +26,27 @@ export class AuctionScheduler {
 
         //close bids
         for (const auction of expiredAuctions) {
-            await this.prisma.auction.update({
-                where: { id: auction.id, version: auction.version },
-                data: { status: 'CLOSED' }, //TO CHECK FOR RACE
-            });
+            const result = await this.prisma.auction.updateMany({
+                where: { 
+                    id: auction.id,
+                    status: 'OPEN',
+                    version: auction.version 
+                },
+                data: { 
+                    status: 'CLOSED', 
+                    version: { increment: 1}
+                }, //TO CHECK FOR RACE
 
-            this.logger.log(`[CLOSED] Auction ${auction.id}. Winner: ${auction.highestBidderId}`);
+            });
+            if (result.count === 1) {
+                this.logger.log(`[CLOSED] Auction ${auction.id}. Winner: ${auction.highestBidderId}`);
+
+            }
+            else {
+                this.logger.debug(`Bid ${auction.id} has already closed.`);
+            }
+
+
         }
     }
 }
