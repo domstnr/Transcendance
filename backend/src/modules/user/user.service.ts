@@ -1,19 +1,19 @@
-import { Injectable, ConflictException, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../prisma.service";
-
 
 @Injectable()
 export class UserService {
     constructor(private readonly prisma: PrismaService) {}
 
     async checkUserExists(email: string, username: string) {
-/*exist?*/const existingUser = await this.prisma.user.findFirst({
-            where: { 
-                OR: [{email}, { username}]
-              },
-            });
+        const existingUser = await this.prisma.user.findFirst({
+            where: {
+                OR: [{ email }, { username }],
+            },
+        });
+
         if (existingUser) {
-            throw new ConflictException(`User already exists`);
+            throw new ConflictException('User already exists');
         }
     }
 
@@ -39,8 +39,8 @@ export class UserService {
                 where: { id },
             });
         } catch (error) {
-            console.error(`check for this`, error);
-            throw new NotFoundException(`Delete action impossible: User Unfound.`);
+            console.error('check for this', error);
+            throw new NotFoundException('Delete action impossible: User Unfound.');
         }
     }
 

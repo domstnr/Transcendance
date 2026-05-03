@@ -1,5 +1,5 @@
 import { Injectable, Logger, UnauthorizedException } from "@nestjs/common";
-import { UserService } from "./user.service";
+import { UserService } from "../user/user.service";
 import { PasswordService } from "./password.service";
 import { LoginDto } from "./dto/login.dto";
 import { TokenService } from "./token.service";

@@ -1,8 +1,9 @@
 import { Routes, Route } from 'react-router-dom'
+import ProtectedRoute from './features/auth/ProtectedRoute'
 import Header from './shared/components/Header'
 import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
-import ProtectedRoute from './features/auth/ProtectedRoute'
+import ProfilePage from './features/profile/ProfilePage'
 import './App.css'
 
 function App() {
@@ -18,6 +19,14 @@ function App() {
               <h1>Transcendance</h1>
               <p>Marketplace platform coming soon.</p>
             </div>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile" 
+        element={
+          <ProtectedRoute>
+           <ProfilePage />
           </ProtectedRoute>
         }
       />

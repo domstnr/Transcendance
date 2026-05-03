@@ -5,8 +5,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './modules/bidding/prisma.module';
 import { AuthnModule } from './modules/auth/auth.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { UserModule } from './modules/user/user.module';
 @Module({
-  imports: [PrismaModule, BiddingModule, EventModule, ScheduleModule.forRoot(), AuthnModule, ChatModule],
+  imports: [PrismaModule, BiddingModule, EventModule, ScheduleModule.forRoot(), AuthnModule, ChatModule, UserModule],
   controllers: [],
   providers: [],
 })

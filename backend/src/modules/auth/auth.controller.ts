@@ -1,19 +1,11 @@
-import { Body, Req, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Res, UseGuards } from "@nestjs/common";
+import { Body, Req, Controller, HttpCode, HttpStatus, Post, Res } from "@nestjs/common";
 import { RegisterDto } from "./dto/register.dto";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { LoginUseCase } from "./auth.login";
 import { RefreshDto } from "./dto/refresh.dto";
 import { RefreshUseCase } from "./auth.refresh";
-import { JwtAuthGuard } from "./strategies/jwt-auth.guard";
 import { Request, Response } from "express";
-
-interface RequestWithUser extends Request {
-    user: {
-        userId: string;
-        username: string;
-    };
-}
 
 const ACCESS_COOKIE_NAME = 'jwt';
 const REFRESH_COOKIE_NAME = 'refreshJwt';
@@ -120,22 +112,4 @@ export class AuthController {
         return { message: 'Logout successful' };
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                 GET routes                                 */
-    /* -------------------------------------------------------------------------- */
-    @Get('profile')
-    @UseGuards(JwtAuthGuard) //token guard for safety, if no token no access
-    getProfile(@Req() req: RequestWithUser) {
-        //if reach here token isValid
-        return {
-            message: 'Welcome, success',
-            user: req.user
-        };
-    }
-    
-    @Delete('delete/:id')
-    async deleteAccount(@Param('id') id: string) {
-        console.log(`Deleting request for ID: ${id}`);
-        return this.authService.deleteAccount(id);
-    }
 }

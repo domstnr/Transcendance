@@ -29,7 +29,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     useEffect(() => {
         async function loadAuth() {
             try {
-                const response = await api.get('/auth/profile')
+                const response = await api.get('/user/me')
                 setUser(response.data.user)
             } catch {
                 setUser(null)

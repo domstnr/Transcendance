@@ -3,7 +3,7 @@ import { PasswordService } from "./password.service";
 import { EventBus } from "../../core/bus/event.service";
 import { RegisterDto } from "./dto/register.dto";
 import { EventType } from "../../core/bus/event.types";
-import { UserService } from "./user.service";
+import { UserService } from "../user/user.service";
 
 
 @Injectable()
@@ -30,16 +30,5 @@ export class AuthService {
         })
 
         return { message: 'Registration successful', userId: newUser.id};
-    }
-
-    async deleteAccount(userId: string) {
-        const deletedUser = await this.userService.deleteUser(userId);
-
-        this.logger.log(`Account deleted: ${deletedUser.username}`);
-
-        return Promise.resolve({
-            status: 'success',
-            message: 'Your account has been deleted',
-        });
     }
 }
