@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Logger, Get, Param, Req } from '@nestjs/common';
+import { Controller, Post, Body, Logger, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { EventBus } from '../../core/bus/event.service';
 import { EventType } from '../../core/bus/event.types';
 import { AuctionRepository } from './auction.repository';
 import { PrismaService } from '../../prisma.service';
+import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 @Controller('bidding')
 export class BiddingController
 {
@@ -13,16 +14,18 @@ export class BiddingController
                 private readonly prisma:    PrismaService,
     ) {}
 
+    @UseGuards(JwtAuthGuard)
     @Post('bid')
     async placeBid(@Body() payload: { auctionId: string; amount: number; userId: string}, 
-                    @Req() request: { user?: { id: string }})
+                    @Req() request: { user: { userId: string; username: string }})
     {
-        const safeUserId = request.user?.id || 'transcendance_secure';
+        const safeUserId = request.user.userId;
+        const safeUsername = request.user.username;
         this.logger.log(`[HTTP] new BID request from ${payload.auctionId} `);
         const event = {
             type: EventType.BID_PLACED,
             timestamp: Date.now(),
-            payload: {...payload, userId: safeUserId},
+            payload: {...payload, userId: safeUserId, username: safeUsername},
         };
         
         console.log(`User ${safeUserId} is bidding ${payload.amount} on ${payload.auctionId}`);
@@ -34,7 +37,7 @@ export class BiddingController
     }
 
     @Post('create')
-    async create(@Body() payload: { id: string; startPrice: number; creatorId: string}){
+    async create(@Body() payload: { id: string; startPrice: number; userId: string }){
         await this.eventBus.publish({
             type: EventType.AUCTION_CREATED,
             timestamp: Date.now(),

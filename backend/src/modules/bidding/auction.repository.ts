@@ -47,6 +47,7 @@ export class AuctionRepository
             
             create: {
                 id: state.id,
+                sellerId: state.sellerId,
                 currentPrice: state.currentPrice,
                 highestBidderId: state.highestBidderId,
                 status: state.status,

@@ -25,10 +25,7 @@ export class WsJwtGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const client = context.switchToWs().getClient<AuthenticatedSocket>();
-
-        const token =
-            (client.handshake.auth?.token as string | undefined) ||
-            client.handshake.headers?.authorization?.split(' ')[1];
+        const token = this.extractToken(client);
         if (!token) {
             this.logger.warn('Websocket connect denied: No token given..');
             throw new WsException('Unauthorized: Token missing');
@@ -45,5 +42,34 @@ export class WsJwtGuard implements CanActivate {
             this.logger.warn('Connection failed: Invalid or Expired Token...');
             throw new WsException('Unauthorized: Token invalid');
         }
+    }
+
+    private extractToken(client: AuthenticatedSocket): string | undefined {
+        const cookieToken = this.extractCookieToken(client.handshake.headers.cookie);
+        if (cookieToken) {
+            return cookieToken;
+        }
+
+        const handshakeToken = client.handshake.auth?.token;
+        if (typeof handshakeToken === 'string' && handshakeToken.length > 0) {
+            return handshakeToken;
+        }
+
+        return client.handshake.headers?.authorization?.split(' ')[1];
+    }
+
+    private extractCookieToken(rawCookieHeader?: string): string | undefined {
+        if (!rawCookieHeader) {
+            return undefined;
+        }
+
+        for (const part of rawCookieHeader.split(';')) {
+            const [rawName, ...rawValue] = part.trim().split('=');
+            if (rawName === 'jwt') {
+                return decodeURIComponent(rawValue.join('='));
+            }
+        }
+
+        return undefined;
     }
 }

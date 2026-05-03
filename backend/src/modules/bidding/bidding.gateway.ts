@@ -38,6 +38,7 @@ export class BiddingGateway extends BaseComponent {
             this.server.to(state.id).emit('bidUpdated', {
                 newPrice: state.currentPrice,
                 bidderId: state.highestBidderId,
+                bidderName: state.highestBidderName || 'A user',
                 timestamp: new Date(),
             });
         });
@@ -49,9 +50,11 @@ export class BiddingGateway extends BaseComponent {
         @MessageBody() data: { auctionId: string; amount: number },
         @ConnectedSocket() client: AuthenticatedSocket,
     ) {
+        const user = client.user;
         await this.eventBus.publish(new BidPlacedEvent({
             auctionId: data.auctionId,
-            userId: client.user.userId,
+            userId: user.userId,
+            username: user.username,
             amount: data.amount,
         }));
 

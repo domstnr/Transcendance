@@ -8,8 +8,8 @@ import { AuctionState } from "../auction.state";
 interface CreateAuctionPayload
 {
     id: string;
+    userId: string;
     startPrice: number;
-    creatorId: string;
 }
 
 @Injectable()
@@ -37,8 +37,10 @@ export class CreateAuctionHandler extends BaseComponent
         }
         const  initialState: AuctionState = {
         id: payload.id,
+        sellerId: payload.userId,
         currentPrice: payload.startPrice,
         highestBidderId: null,
+        highestBidderName: payload.userId,
         status: 'OPEN',
         version: 0,
         endDate : new Date(Date.now() + 2 * 60000),

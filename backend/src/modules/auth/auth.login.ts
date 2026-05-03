@@ -50,7 +50,7 @@ export class LoginUseCase {
             status: 'success',
             message: 'Login success. Waiting for JWT',
             user: {
-                id: user.id,
+                userId: user.id,
                 username: user.username
             },
             tokens: {

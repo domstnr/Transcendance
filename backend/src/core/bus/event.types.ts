@@ -6,6 +6,7 @@ export enum EventType
     AUCTION_CREATED = 'AUCTION_CREATED',
     AUCTION_UPDATED = 'AUCTION_UPDATED',
     USER_REGISTERED = 'USER_REGISTERED',
+    CHAT_MESSAGE_SENT = 'CHAT_MESSAGE_SENT',
 }
 
 // src/core/bus/bus.types.ts
@@ -15,4 +16,12 @@ export interface BidPlacedPayload {
   auctionId: string;
   amount: number;
   userId: string;
+  username: string;
+}
+
+export interface ChatMessageSentPayload {
+  messageId: string;
+  auctionId: string;
+  senderId: string;
+  content: string;
 }

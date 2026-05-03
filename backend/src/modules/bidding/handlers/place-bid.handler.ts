@@ -47,6 +47,7 @@ export class PlaceBidHandler extends BaseComponent
             ...currentState, 
             currentPrice: payload.amount,
             highestBidderId: payload.userId,
+            highestBidderName: payload.username,
             version: currentState.version + 1 //we go step further on "clock"
         };
 

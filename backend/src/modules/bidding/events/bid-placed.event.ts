@@ -5,6 +5,7 @@ export interface BidPlacedPayload {
     auctionId: string;
     userId: string;
     amount: number;
+    username: string;
 }
 
 export class BidPlacedEvent implements IEvent<BidPlacedPayload> {

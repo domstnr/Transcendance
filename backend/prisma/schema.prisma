@@ -26,6 +26,8 @@ model Bid {
 
 model Auction{
   id              String    @id
+  sellerId        String
+  seller          User      @relation("AuctionSeller", fields: [sellerId], references: [id])
   currentPrice    Float
   highestBidderId String?
   status          String    @default("OPEN") //CLOSED OR OPEN
@@ -34,13 +36,44 @@ model Auction{
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   bids            Bid[]
+  messages        Message[]
+  participations  ChatParticipation[]
 }
 
 model User {
-  id          String  @id @default(uuid())
-  username    String  @unique
-  email       String  @unique
-  password    String //just the hash bcrypt, no password
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String  @id @default(uuid())
+  username        String  @unique
+  email           String  @unique
+  password        String //just the hash bcrypt, no password
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  messages        Message[]
+  auctionsCreated Auction[] @relation("AuctionSeller")
+  participations  ChatParticipation[]
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  createdAt  DateTime @default(now())
+  auctionId  String
+  auction    Auction  @relation(fields: [auctionId], references: [id])
+  senderId   String
+  sender     User     @relation(fields: [senderId], references: [id])
+  mediaUrl   String?
+  isOffer    Boolean  @default(false)
+  offerPrice Float?
+
+  @@index([auctionId, createdAt])
+}
+
+model ChatParticipation {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  auctionId  String
+  auction    Auction  @relation(fields: [auctionId], references: [id])
+  lastReadAt DateTime @default(now())
+
+  @@unique([userId, auctionId])
 }
