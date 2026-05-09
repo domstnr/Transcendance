@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { PrismaClient } from "./generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from '@prisma/adapter-pg'
 import "dotenv/config";
 
 
@@ -11,13 +11,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     constructor()
     {
         const connectionStr = `${process.env.DATABASE_URL}`;
-        
-        const adapter = new PrismaBetterSqlite3({ url: connectionStr });
+
+        const adapter = new PrismaPg({ connectionString: connectionStr });
         super({ adapter } );
     }
     async onModuleInit() {
         await this.$connect();
-        console.log('prisma connecté à sqlite');
+        console.log('prisma connecté à postgresql');
     }
 
     async onModuleDestroy() {

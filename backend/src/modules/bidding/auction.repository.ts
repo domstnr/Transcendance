@@ -18,7 +18,7 @@ export class AuctionRepository
             return cachedState;
         }
         // if not go find in db
-        console.log(`[Cache] MISS pour ${id}. Interrogation de SQLite...`);
+        console.log(`[Cache] MISS pour ${id}. Interrogation de PostgreSQL...`);
         const dbState = await this.prisma.auction.findUnique({
             where: { id },
         }) as AuctionState | null;
