@@ -4,7 +4,7 @@ import { updateCurrentUser } from './profileService.ts'
 import type { UpdateProfileRequest } from './types'
 
 function UpdateProfilePage() {
-    const { user } = useAuth()
+    const { user, refreshUser } = useAuth()
     const [email, setEmail] = useState('')
     const [username, setUsername] = useState('')
     const [error, setError] = useState<string | null>(null)
@@ -41,6 +41,7 @@ function UpdateProfilePage() {
             }
             const response = await updateCurrentUser(updateData)
             setMessage(response.message)
+            await refreshUser()
             console.log('update profile response', response)
         } catch (error) {
             console.log('update profile error', error)

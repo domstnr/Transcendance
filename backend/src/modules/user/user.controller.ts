@@ -26,10 +26,17 @@ export class UserController {
 
     @Get('me')
     @UseGuards(JwtAuthGuard)
-    getCurrentUser(@Req() req: RequestWithUser) {
+    async getCurrentUser(@Req() req: RequestWithUser) {
+        const user = await this.userService.findById(req.user.userId);
+        if (!user) {
+            return { message: 'User not found', user: null };
+        }
         return {
             message: 'Welcome, success',
-            user: req.user,
+            user: {
+                userId: user.id,
+                username: user.username,
+            },
         };
     }
 
