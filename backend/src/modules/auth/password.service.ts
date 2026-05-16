@@ -10,14 +10,11 @@ import { generateHash, verifyHash } from "./utils/argon2.util";
 export class PasswordService {
 
     public async hashPassword(password: string): Promise<string> {
-
-        const fullHash = generateHash(password);
-        return Promise.resolve(fullHash);
+        return generateHash(password);
     }
 
     public async comparePassword(plainText: string, hash: string): Promise<boolean> {
-        const isValid = verifyHash(plainText, hash);
-        return Promise.resolve(isValid);
+        return verifyHash(plainText, hash);
     }
 }
 

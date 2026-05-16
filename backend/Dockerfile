@@ -16,10 +16,11 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+COPY entrypoint-backend.sh /usr/local/bin/entrypoint-backend.sh
 
-# RUN npm run build #start prod
+RUN chmod +x /usr/local/bin/entrypoint-backend.sh
 
 EXPOSE 3000
 
+ENTRYPOINT ["/usr/local/bin/entrypoint-backend.sh"]
 CMD ["npm", "run", "start:dev"]
-#CMD ["sh", "-c", "tail -f /dev/null"]

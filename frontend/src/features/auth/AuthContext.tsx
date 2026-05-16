@@ -14,6 +14,7 @@ type AuthContextValue = {
     isLoading: boolean
     login: (user: AuthUser) => void
     logout: () => Promise<void>
+    refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -60,12 +61,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     }
 
+    async function refreshUser() {
+        const response = await api.get('/user/me')
+        setUser(response.data.user)
+    }
+
     const value: AuthContextValue = {
         user,
         isAuthenticated: Boolean(user),
         isLoading,
         login,
         logout,
+        refreshUser,
     }
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
