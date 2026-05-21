@@ -34,6 +34,10 @@ services:
         restart: always
         networks:
             - frontend_network
+            - backend_network
+        depends_on:
+            postgres:
+                condition: service_healthy
 
     frontend:
         container_name: frontend
@@ -53,6 +57,30 @@ services:
         networks:
             - frontend_network
 
+    postgres:
+        container_name: postgres
+        image: postgres:17
+        environment:
+            - POSTGRES_USER=myuser
+            - POSTGRES_PASSWORD=mypassword
+            - POSTGRES_DB=mydatabase
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        restart: always
+        networks:
+            - backend_network
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U myuser"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
 networks:
     frontend_network:
         driver: bridge
+    backend_network:
+        driver: bridge
+volumes:
+  postgres_data:
