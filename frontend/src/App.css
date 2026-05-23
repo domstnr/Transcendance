@@ -1,6 +1,197 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+:root {
+  --color-primary: #0b2239; /* couleur principale utilisée par le CSS du login */
+  --color-secondary: #475569; /* couleur secondaire du texte */
+  --color-error: #dc2626; /* couleur pour les erreurs */
+  --color-success: #059669; /* couleur pour les messages de succès */
+}
+
+html {
+  scroll-behavior: smooth; /* transition fluide sur l'ancre et le scrolling */
+}
+
+* {
+  box-sizing: border-box; /* inclut le padding et la bordure dans la taille totale */
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  background: #f4f5f7;
+  color: #1f2937;
+}
+
+.field label {
+  font-family: Inter, sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+}
+
+.field input {
+  width: 100%;
+  padding: 15px 16px;
+  border: 1px solid #d7dce3;
+  border-radius: 12px;
+  background: #fbfcfd;
+  color: #1f2937;
+  font-family: Inter, sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+
+.field input::placeholder {
+  color: #98a2b3; /* couleur du placeholder */
+}
+
+.field input:hover {
+  border-color: #c2cbd6;
+  background: #fff;
+}
+
+.field input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(223, 162, 69, 0.15);
+  background: #fff;
+}
+
+#username,
+#email,
+#password {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cdd5df;
+  border-radius: 8px;
+  outline: none;
+  font-size: 1rem;
+  background: #fff;
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+  color: #222;
+}
+
+#username::placeholder,
+#email::placeholder,
+#password::placeholder {
+  color: #9aa4b2;
+}
+
+#username:hover,
+#email:hover,
+#password:hover {
+  border-color: #b7c1cd;
+}
+
+#username:focus,
+#email:focus,
+#password:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(11, 34, 57, .08);
+  background: #fcfdff;
+}
+
+#error-2 {
+  color: var(--color-error);
+  min-height: 18px;
+  font-size: .92rem;
+  line-height: 1.4;
+  margin: 4px 0 0;
+}
+
+#message-2 {
+  color: var(--color-success);
+  min-height: 18px;
+  font-size: .92rem;
+  line-height: 1.4;
+  margin: 4px 0 0;
+}
+
+#wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: linear-gradient(180deg, #f7f7f8 0%, #eef1f4 100%);
+}
+
+#principal {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border: 1px solid #dde3ea;
+  border-radius: 10px;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+  align-self: flex-start; /* monte le bloc principal vers le haut du wrapper */
+}
+
+#heading {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--color-secondary);
+  letter-spacing: -.02em;
+}
+
+#form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+#inputdiv {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#button {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #c98d30;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  background-image: linear-gradient(rgb(11, 34, 57) 1%, rgb(11, 34, 57) 100%);
+}
+
+#button:hover {
+  background: #cf9337;
+  border-color: #bf842b;
+  box-shadow: 0 6px 14px rgba(223, 162, 69, .18);
+}
+
+#button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(223, 162, 69, .22);
+}
+
+#button:active {
+  transform: translateY(1px);
+}
+
+#padding { 
+  padding-top: 6px;
   text-align: center;
+  font-size: .95rem;
+  color: #4b5563;
+  border-top: 1px solid #edf1f5;
+}
+
+#link {
+  font-weight: 600;
+  color: var(--color-secondary);
+}
+
+#link:hover {
+  color: var(--color-primary);
 }

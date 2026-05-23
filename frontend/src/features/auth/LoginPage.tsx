@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import type { LoginRequest } from './types'
 import { login } from './authService'
 import { useAuth } from './AuthContext'
@@ -49,41 +50,52 @@ function LoginPage() {
     }
 
     return (
-      <div>
-        <h1>Login</h1>
+      <div id="wrapper"> {/* wrapper principal requis par le CSS GrapesJS */}
+        <div id="principal"> {/* carte blanche centrale du formulaire */}
+          <h1 id="heading">Login</h1> {/* titre stylé par le CSS GrapesJS */}
 
-        <form onSubmit={handleSubmit} noValidate>
-          <div>
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
-            />
-          </div>
+          <form id="form" onSubmit={handleSubmit} noValidate>
+            <div id="inputdiv" className="field"> {/* conteneur de champs, utilisé par le CSS */}
+              <div className="field"> {/* wrapper du champ email */}
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email" /* id attendu par le CSS exporté */
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  autoComplete="email"
+                  placeholder="Enter your email"
+                />
+              </div>
 
-          <div>
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="current-password"
-            />
-          </div>
+              <div className="field"> {/* wrapper du champ mot de passe */}
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password" /* id attendu par le CSS exporté */
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                />
+              </div>
 
-          {error ? <p>{error}</p> : null}
-          {message ? <p>{message}</p> : null}
+              {error ? <div id="error-2">{error}</div> : null} {/* message d'erreur stylé */}
+              {message ? <div id="message-2">{message}</div> : null} {/* message de succès stylé */}
 
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+              <button id="button" type="submit" disabled={isSubmitting}> {/* bouton stylé */}
+                {isSubmitting ? 'Signing in...' : 'Login'}
+              </button>
+            </div>
+          </form>
+
+          <p id="padding"> {/* pied de page du formulaire */}
+            <span>Don't have an account ?</span>{' '}
+            <Link to="/register" id="link">Register</Link> {/* lien stylé */}
+          </p>
+        </div>
       </div>
     )
-  }
+}
 
-  export default LoginPage
+export default LoginPage
