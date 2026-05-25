@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../../prisma.service";
+import { PrismaService } from "../../shared/prisma/prisma.service";
 
 @Injectable()
 export class ChatService {

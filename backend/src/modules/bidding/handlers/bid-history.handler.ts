@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { BaseComponent } from "../../../core/bus/base.component";
 import { EventBus } from "../../../core/bus/event.service";
-import { PrismaService } from "../../../prisma.service";
+import { PrismaService } from "../../../shared/prisma/prisma.service";
 import { AuctionState } from "../auction.state";
 import { EventType } from "../../../core/bus/event.types";
 
