@@ -1,6 +1,5 @@
 export type UpdateProfileRequest = {
     username?: string
-    email?: string
 }
 
 export type UpdateProfileResponse = {

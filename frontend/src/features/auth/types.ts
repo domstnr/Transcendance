@@ -24,3 +24,12 @@ export type RegisterResponse = {
     message: string
     userId: string
 }
+
+export type ChangePasswordRequest = {
+    currentPassword: string
+    newPassword: string
+}
+
+export type ChangePasswordResponse = {
+    message: string
+}

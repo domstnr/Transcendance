@@ -1,59 +1,93 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { updateCurrentUser } from './profileService.ts'
 import type { UpdateProfileRequest } from './types'
+import { changePassword } from '../auth/authService'
 
 function UpdateProfilePage() {
     const { user, refreshUser } = useAuth()
-    const [email, setEmail] = useState('')
+    const navigate = useNavigate()
     const [username, setUsername] = useState('')
-    const [error, setError] = useState<string | null>(null)
-    const [message, setMessage] = useState<string | null>(null)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [profileError, setProfileError] = useState<string | null>(null)
+    const [profileMessage, setProfileMessage] = useState<string | null>(null)
+    const [isProfileSubmitting, setIsProfileSubmitting] = useState(false)
+    const [currentPassword, setCurrentPassword] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmNewPassword, setConfirmNewPassword] = useState('')
+    const [passwordError, setPasswordError] = useState<string | null>(null)
+    const [passwordMessage, setPasswordMessage] = useState<string | null>(null)
+    const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false)
 
     if (!user) {
         return <p>Loading profile...</p>
     }
 
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    async function handleProfileSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
-        setError(null)
-        setMessage(null)
+        setProfileError(null)
+        setProfileMessage(null)
 
         const trimmedUsername = username.trim()
-        const trimmedEmail = email.trim()
 
-        if (!trimmedUsername && !trimmedEmail) {
-            setError('Provide at least one field to update.')
-            return
-        }
-
-        if (trimmedEmail && !trimmedEmail.includes('@')) {
-            setError('Enter a valid email address.')
+        if (!trimmedUsername) {
+            setProfileError('Provide a username to update.')
             return
         }
 
         try {
-            setIsSubmitting(true)
+            setIsProfileSubmitting(true)
             const updateData: UpdateProfileRequest = {
-                ...(trimmedUsername ? { username: trimmedUsername } : {}),
-                ...(trimmedEmail ? { email: trimmedEmail } : {}),
+                username: trimmedUsername,
             }
             const response = await updateCurrentUser(updateData)
-            setMessage(response.message)
+            setProfileMessage(response.message)
             await refreshUser()
             console.log('update profile response', response)
         } catch (error) {
             console.log('update profile error', error)
-            setError('update request failed. Check the console and network tab for details.')
+            setProfileError(error instanceof Error ? error.message : 'error: update request failed.')
         } finally {
-            setIsSubmitting(false)
+            setIsProfileSubmitting(false)
         }
     }
+
+    async function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+        setPasswordError(null)
+        setPasswordMessage(null)
+
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            setPasswordError('Please fill all password fields.')
+            return
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            setPasswordError('New password confirmation does not match.')
+            return
+        }
+
+        try {
+            setIsPasswordSubmitting(true)
+            const response = await changePassword({
+                currentPassword,
+                newPassword,
+            })
+            setPasswordMessage(response.message)
+            window.dispatchEvent(new Event('auth:logout'))
+            navigate('/login', { replace: true })
+        } catch (error) {
+            console.log('change password error', error)
+            setPasswordError(error instanceof Error ? error.message : 'Password update failed.')
+        } finally {
+            setIsPasswordSubmitting(false)
+        }
+    }
+
     return (
         <section>
         <h1>Update profile</h1>
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleProfileSubmit} noValidate>
           <div>
             <label htmlFor="username">Username</label>
             <input
@@ -65,22 +99,54 @@ function UpdateProfilePage() {
             />
           </div>
 
+          {profileError ? <p>{profileError}</p> : null}
+          {profileMessage ? <p>{profileMessage}</p> : null}
+
+          <button type="submit" disabled={isProfileSubmitting}>
+            {isProfileSubmitting ? 'updating...' : 'update'}
+          </button>
+        </form>
+
+        <h2>Change password</h2>
+        <form onSubmit={handlePasswordSubmit} noValidate>
           <div>
-            <label htmlFor="email">Email</label>
+            <label htmlFor="currentPassword">Current password</label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
+              id="currentPassword"
+              type="password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              autoComplete="current-password"
             />
           </div>
 
-          {error ? <p>{error}</p> : null}
-          {message ? <p>{message}</p> : null}
+          <div>
+            <label htmlFor="newPassword">New password</label>
+            <input
+              id="newPassword"
+              type="password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              autoComplete="new-password"
+            />
+          </div>
 
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'updating...' : 'update'}
+          <div>
+            <label htmlFor="confirmNewPassword">Confirm new password</label>
+            <input
+              id="confirmNewPassword"
+              type="password"
+              value={confirmNewPassword}
+              onChange={(event) => setConfirmNewPassword(event.target.value)}
+              autoComplete="new-password"
+            />
+          </div>
+
+          {passwordError ? <p>{passwordError}</p> : null}
+          {passwordMessage ? <p>{passwordMessage}</p> : null}
+
+          <button type="submit" disabled={isPasswordSubmitting}>
+            {isPasswordSubmitting ? 'updating...' : 'change password'}
           </button>
         </form>
         </section>

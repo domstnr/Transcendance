@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { register } from './authService'
 import type { RegisterRequest } from './types'
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 function RegisterPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -16,13 +18,19 @@ function RegisterPage() {
         setMessage(null)
 
         const trimmedEmail = email.trim()
+        const trimmedUsername = username.trim()
+
+        if (!trimmedUsername) {
+            setError('Username is required.')
+            return
+        }
 
         if (!trimmedEmail) {
             setError('Email is required.')
             return
         }
 
-        if (!trimmedEmail.includes('@')) {
+        if (!EMAIL_PATTERN.test(trimmedEmail)) {
             setError('Enter a valid email address.')
             return
         }
@@ -34,13 +42,17 @@ function RegisterPage() {
 
         try {
             setIsSubmitting(true)
-            const credentials: RegisterRequest = { email: trimmedEmail, username, password }
+            const credentials: RegisterRequest = {
+                email: trimmedEmail,
+                username: trimmedUsername,
+                password,
+            }
             const response = await register(credentials)
             setMessage(response.message)
             console.log('register response', response)
         } catch (error) {
             console.log('register error', error)
-            setError('register request failed. Check the console and network tab for details.')
+            setError(error instanceof Error ? error.message : 'error: register request failed.')
         } finally {
             setIsSubmitting(false)
         }

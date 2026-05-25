@@ -2,6 +2,7 @@ import {
     Controller,
     Get, Delete, Patch,
     Logger,
+    UnauthorizedException,
     Req, Body,
     UseGuards }
 from "@nestjs/common";
@@ -29,7 +30,7 @@ export class UserController {
     async getCurrentUser(@Req() req: RequestWithUser) {
         const user = await this.userService.findById(req.user.userId);
         if (!user) {
-            return { message: 'User not found', user: null };
+            throw new UnauthorizedException('Session invalid: user not found.');
         }
         return {
             message: 'Welcome, success',
