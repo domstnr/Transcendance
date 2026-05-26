@@ -18,7 +18,10 @@ import { BidPlacedEvent } from "./events/bid-placed.event";
 
 @WebSocketGateway({
     namespace: 'auctions',
-    cors: { origin: '*' },
+    cors: {
+        origin: process.env.FRONTEND_ORIGIN?.split(',') ?? 'http://localhost:5173',
+        credentials: true,
+    },
 })
 export class BiddingGateway extends BaseComponent {
     @WebSocketServer()

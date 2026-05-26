@@ -16,7 +16,7 @@ import { ChatService } from "./chat.service";
 @WebSocketGateway({
     namespace: 'chat',
     cors: {
-        origin: process.env.FRONTEND_ORIGIN,
+        origin: process.env.FRONTEND_ORIGIN?.split(',') ?? '*',
         credentials: true,
     },
 })
@@ -78,7 +78,7 @@ export class ChatGateway {
         const roomName = `auction:${data.auctionId}`;
         const savedMessage = await this.chatService.saveMessage(userId, data.auctionId, data.content);
 
-        client.to(roomName).emit('new_message', savedMessage);
+        this.server.to(roomName).emit('new_message', savedMessage);
         await this.eventBus.publish(
             new ChatMessageSentEvent({
                 messageId: savedMessage.id,
