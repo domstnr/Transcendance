@@ -6,6 +6,7 @@ export type ChatMessage = {
     createdAt: string
     sender: {
         username: string
+        avatarUrl: string | null
     }
 }
 

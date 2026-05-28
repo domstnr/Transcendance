@@ -3,6 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { WsException } from "@nestjs/websockets";
 import { AuthenticatedSocket } from "../interfaces/auth-socket.interface";
 import { JwtPayload } from "../interfaces/jwt-payload.interface";
+import { extractWsToken } from "../utils/extract-ws-token.util";
 
 /**
  * 1. Prouver l'identité de l'enchérisseur
@@ -25,7 +26,7 @@ export class WsJwtGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const client = context.switchToWs().getClient<AuthenticatedSocket>();
-        const token = this.extractToken(client);
+        const token = extractWsToken(client);
         if (!token) {
             this.logger.warn('Websocket connect denied: No token given..');
             throw new WsException('Unauthorized: Token missing');
@@ -48,32 +49,4 @@ export class WsJwtGuard implements CanActivate {
         }
     }
 
-    private extractToken(client: AuthenticatedSocket): string | undefined {
-        const cookieToken = this.extractCookieToken(client.handshake.headers.cookie);
-        if (cookieToken) {
-            return cookieToken;
-        }
-
-        const handshakeToken = client.handshake.auth?.token;
-        if (typeof handshakeToken === 'string' && handshakeToken.length > 0) {
-            return handshakeToken;
-        }
-
-        return client.handshake.headers?.authorization?.split(' ')[1];
-    }
-
-    private extractCookieToken(rawCookieHeader?: string): string | undefined {
-        if (!rawCookieHeader) {
-            return undefined;
-        }
-
-        for (const part of rawCookieHeader.split(';')) {
-            const [rawName, ...rawValue] = part.trim().split('=');
-            if (rawName === 'jwt') {
-                return decodeURIComponent(rawValue.join('='));
-            }
-        }
-
-        return undefined;
-    }
 }

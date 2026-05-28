@@ -44,12 +44,36 @@ model User {
   id              String  @id @default(uuid())
   username        String  @unique
   email           String  @unique
-  password        String //just the hash bcrypt, no password
+  password        String
+  avatarUrl       String?
+  isOnline        Boolean   @default(false)
+  lastSeen        DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   messages        Message[]
   auctionsCreated Auction[] @relation("AuctionSeller")
   participations  ChatParticipation[]
+  sentRequests    Friendship[] @relation("SentRequests")
+  receivedRequests Friendship[] @relation("ReceivedRequests")
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+model Friendship {
+  id         String           @id @default(uuid())
+  senderId   String
+  sender     User             @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User             @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  status     FriendshipStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([senderId, receiverId])
 }
 
 model Message {

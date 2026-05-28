@@ -1,9 +1,11 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { updateCurrentUser } from './profileService.ts'
+import { updateCurrentUser, uploadAvatar } from './profileService.ts'
 import type { UpdateProfileRequest } from './types'
 import { changePassword } from '../auth/authService'
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function UpdateProfilePage() {
     const { user, refreshUser } = useAuth()
@@ -18,6 +20,10 @@ function UpdateProfilePage() {
     const [passwordError, setPasswordError] = useState<string | null>(null)
     const [passwordMessage, setPasswordMessage] = useState<string | null>(null)
     const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false)
+    const [avatarFile, setAvatarFile] = useState<File | null>(null)
+    const [avatarError, setAvatarError] = useState<string | null>(null)
+    const [avatarMessage, setAvatarMessage] = useState<string | null>(null)
+    const [isAvatarSubmitting, setIsAvatarSubmitting] = useState(false)
 
     if (!user) {
         return <p>Loading profile...</p>
@@ -49,6 +55,27 @@ function UpdateProfilePage() {
             setProfileError(error instanceof Error ? error.message : 'error: update request failed.')
         } finally {
             setIsProfileSubmitting(false)
+        }
+    }
+
+    async function handleAvatarSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+        setAvatarError(null)
+        setAvatarMessage(null)
+        if (!avatarFile) {
+            setAvatarError('Select an image file first.')
+            return
+        }
+        try {
+            setIsAvatarSubmitting(true)
+            const response = await uploadAvatar(avatarFile)
+            setAvatarMessage(response.message)
+            setAvatarFile(null)
+            await refreshUser()
+        } catch (error) {
+            setAvatarError(error instanceof Error ? error.message : 'Upload failed.')
+        } finally {
+            setIsAvatarSubmitting(false)
         }
     }
 
@@ -87,6 +114,27 @@ function UpdateProfilePage() {
     return (
         <section>
         <h1>Update profile</h1>
+
+        <h2>Avatar</h2>
+        {user.avatarUrl && (
+            <img
+                src={`${API_URL}${user.avatarUrl}`}
+                alt="Current avatar"
+                style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', display: 'inline-block', marginBottom: 8 }}
+            />
+        )}
+        <form onSubmit={handleAvatarSubmit} noValidate>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarFile(e.target.files?.[0] ?? null)}
+          />
+          {avatarError ? <p style={{ color: 'red' }}>{avatarError}</p> : null}
+          {avatarMessage ? <p style={{ color: 'green' }}>{avatarMessage}</p> : null}
+          <button type="submit" disabled={isAvatarSubmitting}>
+            {isAvatarSubmitting ? 'uploading...' : 'upload avatar'}
+          </button>
+        </form>
         <form onSubmit={handleProfileSubmit} noValidate>
           <div>
             <label htmlFor="username">Username</label>

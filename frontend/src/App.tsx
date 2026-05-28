@@ -6,6 +6,9 @@ import RegisterPage from './features/auth/RegisterPage'
 import ProfilePage from './features/profile/ProfilePage'
 import UpdateProfilePage from './features/profile/UpdateProfilePage'
 import ChatPage from './features/chat/ChatPage'
+import FriendsPage from './features/friends/FriendsPage'
+import FriendRequestsPage from './features/friends/FriendRequestsPage'
+import UserSearchPage from './features/friends/UserSearchPage'
 import './App.css'
 
 function App() {
@@ -47,6 +50,18 @@ function App() {
             <ChatPage />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/friends"
+        element={<ProtectedRoute><FriendsPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/friends/requests"
+        element={<ProtectedRoute><FriendRequestsPage /></ProtectedRoute>}
+      />
+      <Route
+        path="/friends/search"
+        element={<ProtectedRoute><UserSearchPage /></ProtectedRoute>}
       />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

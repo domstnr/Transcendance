@@ -4,6 +4,19 @@ import { useAuth } from '../auth/AuthContext'
 import { getMessages } from './chatService'
 import { useChat } from './useChat'
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+
+function Avatar({ username, avatarUrl }: { username: string; avatarUrl: string | null }) {
+    return (
+        <span style={{ display: 'inline-flex', width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: '#ccc', alignItems: 'center', justifyContent: 'center', fontSize: 13, verticalAlign: 'middle' }}>
+            {avatarUrl
+                ? <img src={`${API_URL}${avatarUrl}`} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                : username[0].toUpperCase()
+            }
+        </span>
+    )
+}
+
 function ChatPage() {
     const { auctionId } = useParams<{ auctionId: string }>()
     const { user } = useAuth()
@@ -53,13 +66,16 @@ function ChatPage() {
                     <p>Loading messages...</p>
                 ) : (
                     messages.map((msg) => (
-                        <div key={msg.id} style={{ marginBottom: '8px' }}>
-                            <strong>{msg.sender.username}</strong>
-                            {user?.userId === msg.senderId ? ' (you)' : ''}
-                            {': '}
-                            {msg.content}
-                            <span style={{ marginLeft: '8px', fontSize: '0.75em', color: '#888' }}>
-                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <div key={msg.id} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Avatar username={msg.sender.username} avatarUrl={msg.sender.avatarUrl} />
+                            <span>
+                                <strong>{msg.sender.username}</strong>
+                                {user?.userId === msg.senderId ? ' (you)' : ''}
+                                {': '}
+                                {msg.content}
+                                <span style={{ marginLeft: '8px', fontSize: '0.75em', color: '#888' }}>
+                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
                             </span>
                         </div>
                     ))
