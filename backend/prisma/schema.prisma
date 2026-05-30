@@ -12,24 +12,55 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ItemCategory {
+  ELECTRONICS
+  FASHION
+  HOME
+  COLLECTIBLES
+  GAMING
+  BOOKS
+  SPORTS
+  OTHER
+}
 
-model Bid {
-  id          String  @id @default(uuid())
-  auctionId   String
-  userId      String
-  amount      Float
-  status      String  // 'ACCEPTED', 'REJECTED', etc.
-  createdAt   DateTime  @default(now())
+model User {
+  id              String    @id @default(uuid())
+  username        String    @unique
+  email           String    @unique
+  password        String //just the hash bcrypt, no password
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  messages        Message[]
+  auctionsCreated Auction[] @relation("AuctionSeller")
+  auctionsWon     Auction[] @relation("AuctionHighestBidder")
+  itemsCreated    Item[]    @relation("ItemSeller")
+  bids            Bid[]     @relation("BidderBids")
+  participations  ChatParticipation[]
+}
 
-  auction     Auction   @relation(fields: [auctionId], references:  [id])
+model Item {
+  id          String   @id @default(uuid())
+  sellerId    String
+  seller      User     @relation("ItemSeller", fields: [sellerId], references: [id])
+  title       String
+  description String
+  condition   Int
+  category    ItemCategory
+  auction     Auction?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Auction{
   id              String    @id
+  itemId          String    @unique
+  item            Item      @relation(fields: [itemId], references: [id])
   sellerId        String
   seller          User      @relation("AuctionSeller", fields: [sellerId], references: [id])
+  startPrice      Float
   currentPrice    Float
   highestBidderId String?
+  highestBidder   User?     @relation("AuctionHighestBidder", fields: [highestBidderId], references: [id])
   status          String    @default("OPEN") //CLOSED OR OPEN
   version         Int       @default(0)
   endDate         DateTime
@@ -40,16 +71,16 @@ model Auction{
   participations  ChatParticipation[]
 }
 
-model User {
-  id              String  @id @default(uuid())
-  username        String  @unique
-  email           String  @unique
-  password        String //just the hash bcrypt, no password
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  messages        Message[]
-  auctionsCreated Auction[] @relation("AuctionSeller")
-  participations  ChatParticipation[]
+model Bid {
+  id          String  @id @default(uuid())
+  auctionId   String
+  userId      String
+  amount      Float
+  status      String  // 'ACCEPTED', 'REJECTED', etc.
+  createdAt   DateTime  @default(now())
+
+  auction     Auction   @relation(fields: [auctionId], references:  [id])
+  user        User      @relation("BidderBids", fields: [userId], references: [id])
 }
 
 model Message {

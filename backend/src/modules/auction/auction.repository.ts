@@ -8,6 +8,10 @@ export class AuctionRepository
     constructor(private prisma: PrismaService) {}
     private readonly cache = new Map<string, AuctionState>();
 
+    evict(id: string) {
+        this.cache.delete(id);
+    }
+
     // 1. READ (Cache-Aside Pattern)
     async findById(id:string): Promise<AuctionState | null>{
         const cachedState = this.cache.get(id);
@@ -38,6 +42,7 @@ export class AuctionRepository
         this.prisma.auction.upsert({
             where: {id: state.id },
             update: {
+                startPrice: state.startPrice,
                 currentPrice: state.currentPrice,
                 highestBidderId: state.highestBidderId,
                 status: state.status,
@@ -47,7 +52,9 @@ export class AuctionRepository
             
             create: {
                 id: state.id,
+                itemId: state.itemId,
                 sellerId: state.sellerId,
+                startPrice: state.startPrice,
                 currentPrice: state.currentPrice,
                 highestBidderId: state.highestBidderId,
                 status: state.status,
