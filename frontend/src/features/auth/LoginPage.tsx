@@ -43,7 +43,7 @@ function LoginPage() {
             console.log('login response', response)
         } catch (error) {
             console.log('login error', error)
-            setError('Login request failed. Check the console and network tab for details.')
+            setError(error instanceof Error ? error.message : 'error: login request failed.')
         } finally {
             setIsSubmitting(false)
         }

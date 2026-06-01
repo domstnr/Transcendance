@@ -35,6 +35,10 @@ export class WsJwtGuard implements CanActivate {
             const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
                 secret: process.env.JWT_SECRET || 'MySecret',
             });
+            if (payload.tokenType !== 'access') {
+                this.logger.warn('Websocket connection denied: non-access token used');
+                throw new WsException('Unauthorized: Token invalid');
+            }
             client.user = { userId: payload.sub, username: payload.username };
             return true;
         } catch (err) {

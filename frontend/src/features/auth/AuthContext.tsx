@@ -5,7 +5,7 @@ import {
     useState,
     type ReactNode,
 } from 'react'
-import api from '../../shared/api/api'
+import httpClient from '../../shared/api/httpClient'
 import type { AuthUser } from './types'
 
 type AuthContextValue = {
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     useEffect(() => {
         async function loadAuth() {
             try {
-                const response = await api.get('/user/me')
+                const response = await httpClient.get('/user/me')
                 setUser(response.data.user)
             } catch {
                 setUser(null)
@@ -55,14 +55,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     async function logout() {
         try {
-            await api.post('/auth/logout')
+            await httpClient.post('/auth/logout')
         } finally {
             setUser(null)
         }
     }
 
     async function refreshUser() {
-        const response = await api.get('/user/me')
+        const response = await httpClient.get('/user/me')
         setUser(response.data.user)
     }
 

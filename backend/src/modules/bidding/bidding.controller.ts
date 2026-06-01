@@ -2,7 +2,7 @@ import { Controller, Post, Body, Logger, Get, Param, Req, UseGuards } from '@nes
 import { EventBus } from '../../core/bus/event.service';
 import { EventType } from '../../core/bus/event.types';
 import { AuctionRepository } from './auction.repository';
-import { PrismaService } from '../../prisma.service';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 @Controller('bidding')
 export class BiddingController

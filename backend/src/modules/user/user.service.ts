@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../../prisma.service";
+import { PrismaService } from "../../shared/prisma/prisma.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
@@ -36,9 +36,8 @@ export class UserService {
 
     async updateUser(userId: string, updateUserDto: UpdateUserDto) {
         const username = updateUserDto.username?.trim();
-        const email = updateUserDto.email?.trim().toLowerCase();
 
-        if (!username && !email) {
+        if (!username) {
             throw new BadRequestException('No profile field provided for update.');
         }
         if (username) {
@@ -52,24 +51,12 @@ export class UserService {
                 throw new ConflictException('Username already in use.');
             }
         }
-        if (email) {
-            const existingEmail = await this.prisma.user.findFirst({
-                where: {
-                    email,
-                    id: { not: userId },
-                },
-            });
-            if (existingEmail) {
-                throw new ConflictException('Email already in use.');
-            }
-        }
 
         try {
             return await this.prisma.user.update({
                 where: { id: userId },
                 data: {
-                    ...(username ? { username } : {}),
-                    ...(email ? { email } : {}),
+                    username,
                 },
                 select: {
                     id: true,
@@ -99,6 +86,30 @@ export class UserService {
     async findById(id: string) {
         return this.prisma.user.findFirst({
             where: { id },
+        });
+    }
+
+    async findByIdWithPassword(id: string) {
+        return this.prisma.user.findFirst({
+            where: { id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                password: true,
+            },
+        });
+    }
+
+    async updatePassword(id: string, passwordHash: string) {
+        return this.prisma.user.update({
+            where: { id },
+            data: {
+                password: passwordHash,
+            },
+            select: {
+                id: true,
+            },
         });
     }
 

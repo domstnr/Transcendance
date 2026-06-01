@@ -1,16 +1,98 @@
-import { Body, Req, Controller, HttpCode, HttpStatus, Post, Res } from "@nestjs/common";
-import { RegisterDto } from "./dto/register.dto";
-import { AuthService } from "./auth.service";
-import { LoginDto } from "./dto/login.dto";
-import { LoginUseCase } from "./auth.login";
-import { RefreshDto } from "./dto/refresh.dto";
-import { RefreshUseCase } from "./auth.refresh";
+import { 
+    Body,
+    Req,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    Post,
+    Res,
+    Patch,
+    UseGuards 
+} from "@nestjs/common";
 import { Request, Response } from "express";
+import { JwtAuthGuard } from "./strategies/jwt-auth.guard";
+import { AuthService } from "./auth.service";
+import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
+import { RefreshDto } from "./dto/refresh.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
+
+@Controller('auth')
+export class AuthController {
+    constructor(
+        private readonly authService: AuthService,
+    ) {}
+
+    /* -------------------------------------------------------------------------- */
+    /*                                 POST routes                                 */
+    /* -------------------------------------------------------------------------- */
+    @Post('register')
+    @HttpCode(HttpStatus.CREATED)
+    register(@Body() RegisterDto: RegisterDto)  {
+        console.log('A user is trying to signup: ', RegisterDto.username);
+
+        return this.authService.register(RegisterDto);
+    }
+
+    @Post('refresh')
+    @HttpCode(HttpStatus.OK)
+    async refresh(
+        @Body() refreshDto: Partial<RefreshDto>,
+        @Req() req: Request,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const refreshToken = refreshDto?.refreshToken ?? getCookieValue(req, REFRESH_COOKIE_NAME) ?? undefined;
+        const response = await this.authService.refresh(refreshToken);
+        setAuthCookies(res, response.tokens.accessToken, response.tokens.refreshToken);
+        return response;
+    }
+
+    @Post('login')
+    @HttpCode(HttpStatus.OK)
+    async login(
+        @Body() loginDto: LoginDto,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        console.log(`Trying to connect... ${loginDto.email}`);
+
+        const response = await this.authService.login(loginDto);
+        setAuthCookies(res, response.tokens.accessToken, response.tokens.refreshToken);
+        return response;
+    }
+
+    @Post('logout')
+    @HttpCode(HttpStatus.OK)
+    logout(@Res({ passthrough: true }) res: Response) {
+        clearAuthCookies(res);
+        return { message: 'Logout successful' };
+    }
+
+    @Patch('password')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    async changePassword(
+        @Req() req: RequestWithUser,
+        @Body() changePasswordDto: ChangePasswordDto,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const response = await this.authService.changePassword(req.user.userId, changePasswordDto);
+        clearAuthCookies(res);
+        return response;
+    }
+
+}
 
 const ACCESS_COOKIE_NAME = 'jwt';
 const REFRESH_COOKIE_NAME = 'refreshJwt';
 const ACCESS_COOKIE_MAX_AGE = 15 * 60 * 1000;
 const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
+interface RequestWithUser extends Request {
+    user: {
+        userId: string;
+        username: string;
+    };
+}
 
 function getCookieValue(request: Request, name: string): string | null {
     const cookieHeader = request.headers.cookie;
@@ -58,58 +140,4 @@ function clearAuthCookies(response: Response) {
         secure,
         sameSite: 'lax',
     });
-}
-
-@Controller('auth')
-export class AuthController {
-    constructor(
-        private readonly authService: AuthService,
-        private readonly loginUseCase: LoginUseCase,
-        private readonly refreshUseCase: RefreshUseCase,
-    ) {}
-
-    /* -------------------------------------------------------------------------- */
-    /*                                 POST routes                                 */
-    /* -------------------------------------------------------------------------- */
-    @Post('register')
-    @HttpCode(HttpStatus.CREATED)
-    register(@Body() RegisterDto: RegisterDto)    {
-        console.log('A user is trying to signup: ', RegisterDto.username);
-
-        return this.authService.register(RegisterDto);
-    }
-
-    @Post('refresh')
-    @HttpCode(HttpStatus.OK)
-    async refresh(
-        @Body() refreshDto: Partial<RefreshDto>,
-        @Req() req: Request,
-        @Res({ passthrough: true }) res: Response,
-    ) {
-        const refreshToken = refreshDto?.refreshToken ?? getCookieValue(req, REFRESH_COOKIE_NAME) ?? undefined;
-        const response = await this.refreshUseCase.execute(refreshToken);
-        setAuthCookies(res, response.tokens.accessToken, response.tokens.refreshToken);
-        return response;
-    }
-
-    @Post('login')
-    @HttpCode(HttpStatus.OK)
-    async login(
-        @Body() loginDto: LoginDto,
-        @Res({ passthrough: true }) res: Response,
-    ) {
-        console.log(`Trying to connect... ${loginDto.email}`);
-
-        const response = await this.loginUseCase.execute(loginDto);
-        setAuthCookies(res, response.tokens.accessToken, response.tokens.refreshToken);
-        return response;
-    }
-
-    @Post('logout')
-    @HttpCode(HttpStatus.OK)
-    logout(@Res({ passthrough: true }) res: Response) {
-        clearAuthCookies(res);
-        return { message: 'Logout successful' };
-    }
-
 }
