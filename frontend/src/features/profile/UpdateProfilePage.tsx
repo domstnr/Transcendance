@@ -112,92 +112,105 @@ function UpdateProfilePage() {
     }
 
     return (
-        <section>
-        <h1>Update profile</h1>
+      <div id="wrapper" className="profile-page">
+        <div id="principal">
+          <h1 id="heading">Update profile</h1>
 
-        <h2>Avatar</h2>
-        {user.avatarUrl && (
-            <img
-                src={`${API_URL}${user.avatarUrl}`}
-                alt="Current avatar"
-                style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', display: 'inline-block', marginBottom: 8 }}
-            />
-        )}
-        <form onSubmit={handleAvatarSubmit} noValidate>
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarFile(e.target.files?.[0] ?? null)}
-          />
-          {avatarError ? <p style={{ color: 'red' }}>{avatarError}</p> : null}
-          {avatarMessage ? <p style={{ color: 'green' }}>{avatarMessage}</p> : null}
-          <button type="submit" disabled={isAvatarSubmitting}>
-            {isAvatarSubmitting ? 'uploading...' : 'upload avatar'}
-          </button>
-        </form>
-        <form onSubmit={handleProfileSubmit} noValidate>
-          <div>
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              autoComplete="username"
-            />
-          </div>
+          <form className="form" onSubmit={handleAvatarSubmit} noValidate>
+            <div className="field">
+              <h2>Avatar</h2>
+              {user.avatarUrl ? (
+                <img
+                  className="profile-avatar profile-avatar-small"
+                  src={`${API_URL}${user.avatarUrl}`}
+                  alt="Current avatar"
+                />
+              ) : (
+                <div className="profile-avatar-placeholder">
+                  {user.username[0].toUpperCase()}
+                </div>
+              )}
 
-          {profileError ? <p>{profileError}</p> : null}
-          {profileMessage ? <p>{profileMessage}</p> : null}
+              <label htmlFor="avatar-file" className="file-input-label">
+                Choose file
+                <input
+                  id="avatar-file"
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarFile(e.target.files?.[0] ?? null)}
+                />
+              </label>
+              {avatarFile ? <div className="file-name">{avatarFile.name}</div> : null}
+              {avatarError ? <div className="text-error">{avatarError}</div> : null}
+              {avatarMessage ? <div className="text-success">{avatarMessage}</div> : null}
+              <button type="submit" className="button" disabled={isAvatarSubmitting}>
+                {isAvatarSubmitting ? 'uploading...' : 'upload avatar'}
+              </button>
+            </div>
+          </form>
 
-          <button type="submit" disabled={isProfileSubmitting}>
-            {isProfileSubmitting ? 'updating...' : 'update'}
-          </button>
-        </form>
+          <form className="form" onSubmit={handleProfileSubmit} noValidate>
+            <div className="field">
+              <h2>Profile</h2>
+              <label htmlFor="username">Username</label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                autoComplete="username"
+                placeholder="Username"
+              />
+              {profileError ? <div className="text-error">{profileError}</div> : null}
+              {profileMessage ? <div className="text-success">{profileMessage}</div> : null}
+              <button type="submit" className="button" disabled={isProfileSubmitting}>
+                {isProfileSubmitting ? 'updating...' : 'update'}
+              </button>
+            </div>
+          </form>
 
-        <h2>Change password</h2>
-        <form onSubmit={handlePasswordSubmit} noValidate>
-          <div>
-            <label htmlFor="currentPassword">Current password</label>
-            <input
-              id="currentPassword"
-              type="password"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              autoComplete="current-password"
-            />
-          </div>
+          <form className="form" onSubmit={handlePasswordSubmit} noValidate>
+            <div className="field">
+              <h2>Change password</h2>
+              <label htmlFor="currentPassword">Current password</label>
+              <input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                autoComplete="current-password"
+                placeholder="Current password"
+              />
 
-          <div>
-            <label htmlFor="newPassword">New password</label>
-            <input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-              autoComplete="new-password"
-            />
-          </div>
+              <label htmlFor="newPassword">New password</label>
+              <input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                autoComplete="new-password"
+                placeholder="New password"
+              />
 
-          <div>
-            <label htmlFor="confirmNewPassword">Confirm new password</label>
-            <input
-              id="confirmNewPassword"
-              type="password"
-              value={confirmNewPassword}
-              onChange={(event) => setConfirmNewPassword(event.target.value)}
-              autoComplete="new-password"
-            />
-          </div>
+              <label htmlFor="confirmNewPassword">Confirm new password</label>
+              <input
+                id="confirmNewPassword"
+                type="password"
+                value={confirmNewPassword}
+                onChange={(event) => setConfirmNewPassword(event.target.value)}
+                autoComplete="new-password"
+                placeholder="Confirm new password"
+              />
 
-          {passwordError ? <p>{passwordError}</p> : null}
-          {passwordMessage ? <p>{passwordMessage}</p> : null}
-
-          <button type="submit" disabled={isPasswordSubmitting}>
-            {isPasswordSubmitting ? 'updating...' : 'change password'}
-          </button>
-        </form>
-        </section>
+              {passwordError ? <div className="text-error">{passwordError}</div> : null}
+              {passwordMessage ? <div className="text-success">{passwordMessage}</div> : null}
+              <button type="submit" className="button" disabled={isPasswordSubmitting}>
+                {isPasswordSubmitting ? 'updating...' : 'change password'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     )
 }
 export default UpdateProfilePage

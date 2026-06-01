@@ -12,29 +12,39 @@ function ProfilePage() {
     }
 
     return (
-        <section>
-        <div>
-          <h1>Profile</h1>
-          {user.avatarUrl ? (
-              <img
-                  src={`${API_URL}${user.avatarUrl}`}
-                  alt="Avatar"
-                  style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
-              />
-          ) : (
-              <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#ccc', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
-                  {user.username[0].toUpperCase()}
+        <div id="wrapper" className="profile-page">
+          <div id="principal">
+            <h1 id="heading">Profile</h1>
+            <div id="form">
+              <div className="field">
+                {user.avatarUrl ? (
+                  <img
+                    className="profile-avatar"
+                    src={`${API_URL}${user.avatarUrl}`}
+                    alt="Avatar"
+                  />
+                ) : (
+                  <div className="profile-avatar-placeholder">
+                    {user.username[0].toUpperCase()}
+                  </div>
+                )}
               </div>
-          )}
-          <p>Username: {user.username}</p>
-          <p>User ID: {user.userId}</p>
+
+              <div className="field">
+                <p className="profile-text">
+                  <span className="profile-label">Username:</span> {user.username}
+                </p>
+                <p className="profile-text">
+                  <span className="profile-label">User ID:</span> {user.userId}
+                </p>
+              </div>
+
+              <button type="button" className="button" onClick={() => navigate('/profile/update')}>
+                Update profile
+              </button>
+            </div>
+          </div>
         </div>
-        <div>
-          <button type="button" onClick={() => navigate('/profile/update')}>
-            Update profile
-          </button>
-        </div>
-        </section>
     )
 }
 export default ProfilePage
