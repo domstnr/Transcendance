@@ -9,3 +9,18 @@ export async function updateCurrentUser(data: UpdateProfileRequest) {
         throw new Error(extractHttpErrorMessage(error) ?? 'error: request failed')
     }
 }
+
+export async function uploadAvatar(file: File) {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    try {
+        const response = await httpClient.patch<{ message: string; avatarUrl: string }>(
+            '/user/me/avatar',
+            formData,
+            { headers: { 'Content-Type': 'multipart/form-data' } },
+        )
+        return response.data
+    } catch (error) {
+        throw new Error(extractHttpErrorMessage(error) ?? 'error: upload failed')
+    }
+}

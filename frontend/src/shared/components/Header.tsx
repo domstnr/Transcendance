@@ -11,6 +11,7 @@ function Header() {
             <button type="button" onClick={() => void logout()}>Logout</button>
             <Link to="/">Home</Link>
             <Link to="/profile">Profile</Link>
+            <Link to="/friends">Friends</Link>
             </>
         ) : (
             <>

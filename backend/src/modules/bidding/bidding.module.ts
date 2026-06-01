@@ -8,7 +8,6 @@ import { AuctionScheduler } from './handlers/auction.scheduler';
 import { BiddingGateway } from './bidding.gateway';
 import { BidHistoryHandler } from './handlers/bid-history.handler';
 import { AuthnModule } from '../auth/auth.module';
-
 @Module({
   // On importe le bus pour qu'il soit accessible
   imports: [EventModule, AuthnModule],

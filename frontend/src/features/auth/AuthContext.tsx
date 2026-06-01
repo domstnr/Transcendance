@@ -2,11 +2,16 @@ import {
     createContext,
     useContext,
     useEffect,
+    useRef,
     useState,
     type ReactNode,
 } from 'react'
+
+import { io, type Socket } from 'socket.io-client'
 import httpClient from '../../shared/api/httpClient'
 import type { AuthUser } from './types'
+
+const SOCKET_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 type AuthContextValue = {
     user: AuthUser | null
@@ -26,6 +31,22 @@ type AuthProviderProps = {
 export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<AuthUser | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const presenceSocketRef = useRef<Socket | null>(null)
+
+    useEffect(() => {
+        if (user) {
+            const socket = io(`${SOCKET_URL}/presence`, { withCredentials: true })
+            presenceSocketRef.current = socket
+        } else {
+            presenceSocketRef.current?.disconnect()
+            presenceSocketRef.current = null
+        }
+
+        return () => {
+            presenceSocketRef.current?.disconnect()
+            presenceSocketRef.current = null
+        }
+    }, [user])
 
     useEffect(() => {
         async function loadAuth() {
