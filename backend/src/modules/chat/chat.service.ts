@@ -47,7 +47,7 @@ export class ChatService {
             },
             include: {
                 sender: {
-                    select: { username: true },
+                    select: { username: true, avatarUrl: true },
                 },
             },
         });

@@ -1,7 +1,7 @@
-all:
+all: check-env
 	docker compose up -d --build;
 
-up:
+up: check-env
 	docker compose up -d;
 
 down:
@@ -39,3 +39,6 @@ clean:
 		echo "Dockers networks are already deleted!"; \
 	fi
 	@echo Cleanup finished!
+
+check-env:
+	@test -f .env || (printf "\033[31mError: .env file not found\033[0m\n"; exit 1)

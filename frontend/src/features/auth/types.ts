@@ -1,6 +1,7 @@
 export type AuthUser = {
     userId: string
     username: string
+    avatarUrl: string | null
 }
 
 export type LoginRequest = {

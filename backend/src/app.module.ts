@@ -7,8 +7,11 @@ import { AuthnModule } from './modules/auth/auth.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { UserModule } from './modules/user/user.module';
 import { ItemModule } from './modules/item/item.module';
+import { FriendsModule } from './modules/friends/friends.module';
+import { PresenceModule } from './modules/presence/presence.module';
+
 @Module({
-  imports: [PrismaModule, AuctionModule, EventModule, ScheduleModule.forRoot(), AuthnModule, ChatModule, UserModule, ItemModule],
+  imports: [PrismaModule, AuctionModule, EventModule, ScheduleModule.forRoot(), AuthnModule, ChatModule, UserModule, ItemModule, FriendsModule, PresenceModule],
   controllers: [],
   providers: [],
 })

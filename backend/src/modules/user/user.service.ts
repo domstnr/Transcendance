@@ -118,4 +118,30 @@ export class UserService {
             where: { email },
         });
     }
+
+    async searchUsers(query: string, excludeUserId: string) {
+        return this.prisma.user.findMany({
+            where: {
+                username: { contains: query, mode: 'insensitive' },
+                id: { not: excludeUserId },
+            },
+            select: { id: true, username: true, isOnline: true, avatarUrl: true },
+            take: 20,
+        });
+    }
+
+    async updateAvatar(userId: string, avatarUrl: string) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { avatarUrl },
+            select: { id: true, avatarUrl: true },
+        });
+    }
+
+    async setOnlineStatus(userId: string, isOnline: boolean) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { isOnline, lastSeen: new Date() },
+        });
+    }
 }

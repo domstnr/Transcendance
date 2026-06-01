@@ -7,6 +7,8 @@ import type { ItemSummary } from '../item/types'
 
 type ItemModalMode = 'create' | 'edit' | null
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+
 function ProfilePage() {
     const { user } = useAuth()
     const navigate = useNavigate()
@@ -172,6 +174,17 @@ function ProfilePage() {
         <div className="profile-header">
           <div>
             <h1>Profile</h1>
+            {user.avatarUrl ? (
+              <img
+                src={`${API_URL}${user.avatarUrl}`}
+                alt="Avatar"
+                style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
+              />
+            ) : (
+              <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#ccc', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
+                {user.username[0].toUpperCase()}
+              </div>
+            )}
             <p>Username: {user.username}</p>
             <p>User ID: {user.userId}</p>
           </div>

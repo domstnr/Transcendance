@@ -24,7 +24,6 @@ export class ChatGateway {
     @WebSocketServer() server!: Server;
 
     private readonly logger = new Logger(ChatGateway.name);
-    private readonly activeConnections = new Map<string, string>();
 
     constructor(
         private readonly chatService: ChatService,
@@ -36,14 +35,7 @@ export class ChatGateway {
     }
 
     handleDisconnect(client: Socket) {
-        const userId = this.activeConnections.get(client.id);
-        if (userId) {
-            this.logger.log(`Disconnect of user [${userId}] (socket: ${client.id})`);
-            this.activeConnections.delete(client.id);
-            return;
-        }
-
-        this.logger.log(`Disconnect of unidentified user (socket: ${client.id})`);
+        this.logger.log(`Chat disconnected: ${client.id}`);
     }
 
     @UseGuards(WsJwtGuard)
@@ -54,7 +46,6 @@ export class ChatGateway {
     ) {
         try {
             const userId = client.user.userId;
-            this.activeConnections.set(client.id, userId);
             await this.chatService.verifyCanJoinAuction(userId, data.auctionId);
 
             const roomName = `auction:${data.auctionId}`;

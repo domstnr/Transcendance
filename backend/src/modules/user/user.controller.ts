@@ -1,12 +1,20 @@
-import { 
+import {
     Controller,
     Get, Delete, Patch,
     Logger,
     UnauthorizedException,
+    BadRequestException,
+    Query,
     Req, Body,
-    UseGuards }
-from "@nestjs/common";
+    UseGuards,
+    UseInterceptors,
+    UploadedFile,
+} from "@nestjs/common";
 import type { Request } from "express";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import { extname } from "path";
+import { randomUUID } from "crypto";
 import { JwtAuthGuard } from "../auth/strategies/jwt-auth.guard";
 import { UserService } from "./user.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -37,6 +45,7 @@ export class UserController {
             user: {
                 userId: user.id,
                 username: user.username,
+                avatarUrl: user.avatarUrl ?? null,
             },
         };
     }
@@ -61,6 +70,44 @@ export class UserController {
       };
     }
 
+    @Patch('me/avatar')
+    @UseGuards(JwtAuthGuard)
+    @UseInterceptors(
+        FileInterceptor('avatar', {
+            storage: diskStorage({
+                destination: './uploads/avatars',
+                filename: (_req, file, cb) => {
+                    cb(null, `${randomUUID()}${extname(file.originalname)}`);
+                },
+            }),
+            fileFilter: (_req, file, cb) => {
+                if (!file.mimetype.match(/^image\/(jpeg|png|gif|webp)$/)) {
+                    cb(new BadRequestException('Only image files are allowed (jpeg, png, gif, webp)'), false);
+                    return;
+                }
+                cb(null, true);
+            },
+            limits: { fileSize: 2 * 1024 * 1024 },
+        }),
+    )
+    async uploadAvatar(
+        @Req() req: RequestWithUser,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        if (!file) {
+            throw new BadRequestException('No file provided');
+        }
+        const avatarUrl = `/uploads/avatars/${file.filename}`;
+        await this.userService.updateAvatar(req.user.userId, avatarUrl);
+        return { message: 'Avatar updated successfully', avatarUrl };
+    }
+
+    @Get('search')
+    @UseGuards(JwtAuthGuard)
+    async searchUsers(@Req() req: RequestWithUser, @Query('q') q: string) {
+        if (!q || q.trim().length < 2) return [];
+        return this.userService.searchUsers(q.trim(), req.user.userId);
+    }
 
     @Delete('me')
     @UseGuards(JwtAuthGuard)
