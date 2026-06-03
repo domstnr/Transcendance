@@ -57,7 +57,7 @@ function FriendsPage() {
                         <li key={friend.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                             <Avatar username={friend.username} avatarUrl={friend.avatarUrl} />
                             <span style={{ color: friend.isOnline ? 'green' : 'gray' }}>●</span>
-                            <strong>{friend.username}</strong>
+                            <Link to={`/user/${friend.id}`}><strong>{friend.username}</strong></Link>
                             {' '}
                             {!friend.isOnline && friend.lastSeen && (
                                 <small>last seen {new Date(friend.lastSeen).toLocaleString()}</small>

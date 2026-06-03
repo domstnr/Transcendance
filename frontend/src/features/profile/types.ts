@@ -12,3 +12,10 @@ export type UpdateProfileResponse = {
         updatedAt: string
     }
 }
+
+export type PublicUser = {
+    userId: string
+    username: string
+    avatarUrl:string | null
+    isOnline: boolean
+}

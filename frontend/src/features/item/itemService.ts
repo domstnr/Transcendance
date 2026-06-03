@@ -17,6 +17,15 @@ export async function getCurrentUserItems() {
   }
 }
 
+export async function getOtherUserItems(userId: string) {
+  try {
+    const response = await httpClient.get<GetMyItemsResponse>(`/item/seller/${userId}`)
+    return response.data
+  } catch (error) {
+    throw new Error(extractHttpErrorMessage(error) ?? 'Failed to load items.')
+  }
+}
+
 export async function createItem(data: CreateItemRequest) {
   try {
     const response = await httpClient.post<CreateItemResponse>('/item', data)
