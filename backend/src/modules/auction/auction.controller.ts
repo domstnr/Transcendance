@@ -4,10 +4,11 @@ import { EventType } from '../../core/bus/event.types';
 import { AuctionRepository } from './auction.repository';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
-@Controller('bidding')
-export class BiddingController
+import { PlaceBidDto } from './dto/place-bid.dto';
+@Controller('auctions')
+export class AuctionController
 {
-    private readonly logger = new Logger(BiddingController.name);
+    private readonly logger = new Logger(AuctionController.name);
 
     constructor(private readonly eventBus: EventBus,
                 private readonly auctionRepo: AuctionRepository,
@@ -15,35 +16,28 @@ export class BiddingController
     ) {}
 
     @UseGuards(JwtAuthGuard)
-    @Post('bid')
-    async placeBid(@Body() payload: { auctionId: string; amount: number; userId: string}, 
-                    @Req() request: { user: { userId: string; username: string }})
+    @Post(':id/bids')
+    async placeBid(
+        @Param('id') auctionId: string,
+        @Body() payload: PlaceBidDto,
+        @Req() request: { user: { userId: string; username: string }},
+    )
     {
         const safeUserId = request.user.userId;
         const safeUsername = request.user.username;
-        this.logger.log(`[HTTP] new BID request from ${payload.auctionId} `);
+        this.logger.log(`[HTTP] new BID request from ${auctionId} `);
         const event = {
             type: EventType.BID_PLACED,
             timestamp: Date.now(),
-            payload: {...payload, userId: safeUserId, username: safeUsername},
+            payload: { auctionId, amount: payload.amount, userId: safeUserId, username: safeUsername },
         };
         
-        console.log(`User ${safeUserId} is bidding ${payload.amount} on ${payload.auctionId}`);
+        console.log(`User ${safeUserId} is bidding ${payload.amount} on ${auctionId}`);
         await this.eventBus.publish(event);
         return Promise.resolve({
             status: 'succes',
             message: `Your bid of ${payload.amount} is in treatment`
         });
-    }
-
-    @Post('create')
-    async create(@Body() payload: { id: string; startPrice: number; userId: string }){
-        await this.eventBus.publish({
-            type: EventType.AUCTION_CREATED,
-            timestamp: Date.now(),
-            payload,
-        });
-        return { status: 'Auction successfully created'};
     }
 
     @Get(':id')

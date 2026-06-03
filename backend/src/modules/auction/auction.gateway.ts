@@ -23,10 +23,10 @@ import { BidPlacedEvent } from "./events/bid-placed.event";
         credentials: true,
     },
 })
-export class BiddingGateway extends BaseComponent {
+export class AuctionGateway extends BaseComponent {
     @WebSocketServer()
     private readonly server!: Server;
-    private readonly logger = new Logger(BiddingGateway.name);
+    private readonly logger = new Logger(AuctionGateway.name);
 
     constructor(eventBus: EventBus) {
         super(eventBus);
