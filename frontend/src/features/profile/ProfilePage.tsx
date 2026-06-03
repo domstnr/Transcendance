@@ -35,6 +35,8 @@ function ProfilePage() {
         void loadItems()
     }, [user])
 
+    const itemCount = items.length
+
     async function loadItems() {
         try {
             setIsItemsLoading(true)
@@ -170,43 +172,53 @@ function ProfilePage() {
     }
 
     return (
-        <section className="profile-page">
-        <div className="profile-header">
+      <section className="profile-page">
+        <div className="profile-page-header">
           <div>
-            <h1>Profile</h1>
-            {user.avatarUrl ? (
-              <img
-                src={`${API_URL}${user.avatarUrl}`}
-                alt="Avatar"
-                style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
-              />
-            ) : (
-              <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#ccc', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
-                {user.username[0].toUpperCase()}
+            <h1 id="heading">Profile</h1>
+            <div className="form">
+              <div className="profile-avatar-section">
+                {user.avatarUrl ? (
+                  <img
+                    className="avatar-img"
+                    src={`${API_URL}${user.avatarUrl}`}
+                    alt={`${user.username} avatar`}
+                  />
+                ) : (
+                  <div className="profile-avatar-placeholder">
+                    {user.username[0].toUpperCase()}
+                  </div>
+                )}
               </div>
-            )}
-            <p>Username: {user.username}</p>
-            <p>User ID: {user.userId}</p>
-          </div>
-          <div className="profile-actions">
-            <button type="button" onClick={() => navigate('/profile/update')}>
-              Update profile
-            </button>
+              <p className="profile-text">
+                <span className="profile-label">Username:</span> {user.username}
+              </p>
+              <p className="profile-text">
+                <span className="profile-label">User ID:</span> {user.userId}
+              </p>
+              <button type="button" className="button btn-update" onClick={() => navigate('/profile/update')}>
+                Update profile
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="profile-section-header">
           <h2>My items</h2>
-          <button type="button" onClick={openCreateModal}>
+          <button type="button" className="button-secondary" onClick={openCreateModal}>
             New
           </button>
         </div>
 
-        {isItemsLoading ? <p>Loading your items...</p> : null}
-        {itemsError ? <p>{itemsError}</p> : null}
+        {(isItemsLoading || itemsError) && (
+          <div className="items-status">
+            {isItemsLoading ? <p>Loading your items...</p> : null}
+            {itemsError ? <p className="error-message">{itemsError}</p> : null}
+          </div>
+        )}
 
-        {!isItemsLoading && !itemsError ? (
-          items.length > 0 ? (
+        {!isItemsLoading && !itemsError && (
+          itemCount > 0 ? (
             <div className="item-grid">
               {items.map((item) => (
                 <article key={item.id} className="item-card">
@@ -243,9 +255,11 @@ function ProfilePage() {
               ))}
             </div>
           ) : (
-            <p>You have not created any items yet.</p>
+            <div className="empty-state">
+              <p>You have not created any items yet.</p>
+            </div>
           )
-        ) : null}
+        )}
 
         {modalMode ? (
           <div className="modal-backdrop" role="presentation" onClick={closeModal}>
@@ -330,7 +344,7 @@ function ProfilePage() {
                   </>
                 ) : null}
 
-                {modalError ? <p>{modalError}</p> : null}
+                {modalError ? <p className="modal-error-message">{modalError}</p> : null}
 
                 <div className="modal-actions">
                   <button type="button" onClick={closeModal} disabled={isSavingItem}>
@@ -344,7 +358,7 @@ function ProfilePage() {
             </div>
           </div>
         ) : null}
-        </section>
+      </section>
     )
 }
 export default ProfilePage
