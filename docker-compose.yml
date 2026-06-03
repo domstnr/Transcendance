@@ -77,6 +77,26 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+    
+    db-backup:
+        container_name: db-backup
+        image: postgres:17
+        entrypoint: /bin/bash
+        command: /scripts/backup.sh
+        environment:
+            - POSTGRES_HOST=postgres
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - PGPASSWORD=${POSTGRES_PASSWORD}
+        volumes:
+            - backups:/backups
+            - ./scripts/backup.sh:/scripts/backup.sh:ro
+        networks:
+            - backend_network
+        depends_on:
+            postgres:
+                condition: service_healthy
+        restart: always
 
 networks:
     frontend_network:
@@ -86,3 +106,4 @@ networks:
 volumes:
   postgres_data:
   uploads_data:
+  backups:

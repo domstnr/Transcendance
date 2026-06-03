@@ -9,9 +9,10 @@ import { UserModule } from './modules/user/user.module';
 import { ItemModule } from './modules/item/item.module';
 import { FriendsModule } from './modules/friends/friends.module';
 import { PresenceModule } from './modules/presence/presence.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
-  imports: [PrismaModule, AuctionModule, EventModule, ScheduleModule.forRoot(), AuthnModule, ChatModule, UserModule, ItemModule, FriendsModule, PresenceModule],
+  imports: [PrismaModule, AuctionModule, EventModule, ScheduleModule.forRoot(), AuthnModule, ChatModule, UserModule, ItemModule, FriendsModule, PresenceModule, HealthModule],
   controllers: [],
   providers: [],
 })
