@@ -19,7 +19,7 @@ import { BidPlacedEvent } from "./events/bid-placed.event";
 @WebSocketGateway({
     namespace: 'auctions',
     cors: {
-        origin: process.env.FRONTEND_ORIGIN?.split(',') ?? 'http://localhost:5173',
+        origin: process.env.FRONTEND_ORIGIN?.split(',') ?? 'https://localhost',
         credentials: true,
     },
 })
