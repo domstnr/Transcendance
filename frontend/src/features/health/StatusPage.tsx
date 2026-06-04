@@ -27,6 +27,8 @@ function StatusPage() {
 
 	useEffect(() => {
 		void fetchHealth()
+		const interval = setInterval(() => void fetchHealth(), 30_000)
+		return () => clearInterval(interval)
 	}, [])
 
 	const isUp = health?.status === 'ok'

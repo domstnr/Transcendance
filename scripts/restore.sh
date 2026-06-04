@@ -45,7 +45,12 @@ fi
 echo ""
 echo "Restoring..."
 
-docker exec db-backup bash -c "gunzip -c $SELECTED | psql -h \$POSTGRES_HOST -U \$POSTGRES_USER \$POSTGRES_DB"
+docker exec db-backup bash -c "
+    psql -h \$POSTGRES_HOST -U \$POSTGRES_USER postgres -c 'SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \$\$'\$POSTGRES_DB'\$\$;'
+    psql -h \$POSTGRES_HOST -U \$POSTGRES_USER postgres -c 'DROP DATABASE IF EXISTS '\$POSTGRES_DB';'
+    psql -h \$POSTGRES_HOST -U \$POSTGRES_USER postgres -c 'CREATE DATABASE '\$POSTGRES_DB';'
+    gunzip -c $SELECTED | psql -h \$POSTGRES_HOST -U \$POSTGRES_USER \$POSTGRES_DB
+"
 
 echo ""
 echo "Restore complete."
