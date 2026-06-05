@@ -240,11 +240,12 @@ function ProfilePage() {
                     )}
                   </div>
                   <div className="item-card-actions">
-                    <button type="button" onClick={() => openEditModal(item)}>
+                    <button type="button" className="item-button item-button--primary" onClick={() => openEditModal(item)}>
                       Edit
                     </button>
                     <button
                       type="button"
+                      className="item-button item-button--danger"
                       onClick={() => void handleDeleteItem(item)}
                       disabled={deletingItemId === item.id}
                     >
@@ -347,10 +348,10 @@ function ProfilePage() {
                 {modalError ? <p className="modal-error-message">{modalError}</p> : null}
 
                 <div className="modal-actions">
-                  <button type="button" onClick={closeModal} disabled={isSavingItem}>
+                  <button type="button" className="item-button item-button--cancel" onClick={closeModal} disabled={isSavingItem}>
                     Cancel
                   </button>
-                  <button type="submit" disabled={isSavingItem}>
+                  <button type="submit" className="item-button item-button--primary" disabled={isSavingItem}>
                     {isSavingItem ? (modalMode === 'edit' ? 'Saving...' : 'Creating...') : (modalMode === 'edit' ? 'Save changes' : 'Create listing')}
                   </button>
                 </div>

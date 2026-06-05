@@ -447,6 +447,25 @@ body {
   border-color: var(--border-hover);
 }
 
+.item-button--primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.item-button--primary:hover {
+  background: #cf9337;
+  border-color: #bf842b;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(223, 162, 69, 0.18);
+}
+
+.item-button--cancel:hover {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: #fff;
+}
+
 .item-button:disabled {
   opacity: 0.65;
   cursor: not-allowed;
