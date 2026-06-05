@@ -41,6 +41,7 @@ model User {
   participations   ChatParticipation[]
   sentRequests     Friendship[]        @relation("SentRequests")
   receivedRequests Friendship[]        @relation("ReceivedRequests")
+  apiKeys          ApiKey[]
 }
 
 model Item {
@@ -131,4 +132,13 @@ model ChatParticipation {
   lastReadAt DateTime @default(now())
 
   @@unique([userId, auctionId])
+}
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  key         String    @unique
+  name        String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
 }

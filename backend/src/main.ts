@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import cookieParser from 'cookie-parser';
 import { join } from 'path';
 import * as express from 'express';
@@ -31,6 +32,15 @@ async function bootstrap() {
     }),
   );
 
+  const config = new DocumentBuilder()
+      .setTitle('Transcendance API')
+      .setDescription('Public API for the Transcendance marketplace')
+      .setVersion('1.0')
+      .addApiKey({ type: 'apiKey', in: 'header', name: 'x-api-key' }, 'api-key')
+      .addSecurityRequirements('api-key')
+      .build()
+  const document = SwaggerModule.createDocument(app, config)
+  SwaggerModule.setup('docs', app, document)
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
