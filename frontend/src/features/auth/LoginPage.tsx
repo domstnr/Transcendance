@@ -50,17 +50,18 @@ function LoginPage() {
     }
 
     return (
-      <div id="wrapper"> {/* wrapper principal requis par le CSS GrapesJS */}
-        <div id="principal"> {/* carte blanche centrale du formulaire */}
-          <h1 id="heading">Login</h1> {/* titre stylé par le CSS GrapesJS */}
+      <div id="wrapper">
+        <div id="principal">
+          <h1 id="heading">Login</h1>
 
           <form id="form" onSubmit={handleSubmit} noValidate>
-            <div id="inputdiv" className="field"> {/* conteneur de champs, utilisé par le CSS */}
-              <div className="field"> {/* wrapper du champ email */}
+            <div id="inputdiv" className="field">
+              <div className="field">
                 <label htmlFor="email">Email</label>
                 <input
-                  id="email" /* id attendu par le CSS exporté */
+                  id="email"
                   type="email"
+                  className="form-control"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   autoComplete="email"
@@ -68,11 +69,12 @@ function LoginPage() {
                 />
               </div>
 
-              <div className="field"> {/* wrapper du champ mot de passe */}
+              <div className="field">
                 <label htmlFor="password">Password</label>
                 <input
-                  id="password" /* id attendu par le CSS exporté */
+                  id="password"
                   type="password"
+                  className="form-control"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   autoComplete="current-password"
@@ -80,18 +82,33 @@ function LoginPage() {
                 />
               </div>
 
-              {error ? <div id="error-2">{error}</div> : null} {/* message d'erreur stylé */}
-              {message ? <div id="message-2">{message}</div> : null} {/* message de succès stylé */}
+              {error ? (
+                <div id="error-2" className="alert alert-danger" role="alert">
+                  {error}
+                </div>
+              ) : null}
+              {message ? (
+                <div id="message-2" className="alert alert-success" role="alert">
+                  {message}
+                </div>
+              ) : null}
 
-              <button id="button" type="submit" disabled={isSubmitting}> {/* bouton stylé */}
+              <button
+                id="button"
+                type="submit"
+                className="btn btn-primary"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? 'Signing in...' : 'Login'}
               </button>
             </div>
           </form>
 
-          <p id="padding"> {/* pied de page du formulaire */}
-            <span>Don't have an account ?</span>{' '}
-            <Link to="/register" id="link">Register</Link> {/* lien stylé */}
+          <p id="padding">
+            <span>Don&apos;t have an account ?</span>{' '}
+            <Link to="/register" id="link">
+              Register
+            </Link>
           </p>
         </div>
       </div>

@@ -40,39 +40,44 @@ function FriendsPage() {
     if (loading) return <p>Loading friends...</p>
 
     return (
-        <section>
-            <h1>Friends ({friends.length})</h1>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <nav>
-                <Link to="/friends/requests">Pending Requests</Link>
-                {' | '}
-                <Link to="/friends/search">Find Friends</Link>
-            </nav>
-            {friends.length === 0 ? (
-                <p>No friends yet. <Link to="/friends/search">Find people to add!</Link></p>
-            ) : (
-                <div style={{ display: 'inline-block', textAlign: 'left' }}>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {friends.map(friend => (
-                        <li key={friend.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <Avatar username={friend.username} avatarUrl={friend.avatarUrl} />
-                            <span style={{ color: friend.isOnline ? 'green' : 'gray' }}>●</span>
-                            <strong>{friend.username}</strong>
-                            {' '}
-                            {!friend.isOnline && friend.lastSeen && (
-                                <small>last seen {new Date(friend.lastSeen).toLocaleString()}</small>
-                            )}
-                            {' '}
-                            <button type="button" onClick={() => void handleRemove(friend.id)}>
-                                Remove
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-                </div>
-            )}
-        </section>
-    )
+    <section className="friends-section">
+      <h1 className="friends-title">Friends (3)</h1>
+
+      <p className="error-message">Error message here</p>
+
+      <nav className="friends-nav">
+        <a href="#" className="friends-link">Pending Requests</a>
+        <span className="friends-sep">|</span>
+        <a href="#" className="friends-link">Find Friends</a>
+      </nav>
+
+      <div className="friends-list">
+        <ul>
+          <li className="friend-item">
+            <img src="https://via.placeholder.com/40" className="friend-avatar" />
+            <span className="status online">●</span>
+            <strong>JohnDoe</strong>
+            <button className="item-button item-button--danger">Remove</button>
+          </li>
+
+          <li className="friend-item">
+            <img src="https://via.placeholder.com/40" className="friend-avatar" />
+            <span className="status offline">●</span>
+            <strong>JaneSmith</strong>
+            <small>last seen 07/08/2025 18:45</small>
+            <button className="item-button item-button--danger">Remove</button>
+          </li>
+
+          <li className="friend-item">
+            <img src="https://via.placeholder.com/40" className="friend-avatar" />
+            <span className="status online">●</span>
+            <strong>Mike42</strong>
+            <button className="item-button item-button--danger">Remove</button>
+          </li>
+        </ul>
+      </div>
+    </section>
+  )
 }
 
 export default FriendsPage
