@@ -20,8 +20,6 @@ services:
         build:
             context: ./backend
             dockerfile: Dockerfile
-        ports:
-            - "3000:3000"
         volumes:
             - ./backend:/app
             - /app/node_modules
@@ -45,13 +43,11 @@ services:
         build:
             context: ./frontend
             dockerfile: Dockerfile
-        ports:
-            - "5173:5173"
         volumes:
             - ./frontend:/app
             - /app/node_modules
         environment:
-            - VITE_API_URL=http://localhost:3000
+            - VITE_API_URL=https://localhost
         depends_on:
             - backend
         restart: always
@@ -77,6 +73,43 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+    
+    db-backup:
+        container_name: db-backup
+        image: postgres:17
+        entrypoint: /bin/bash
+        command: /scripts/backup.sh
+        environment:
+            - POSTGRES_HOST=postgres
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - PGPASSWORD=${POSTGRES_PASSWORD}
+        volumes:
+            - backups:/backups
+            - ./scripts/backup.sh:/scripts/backup.sh:ro
+        networks:
+            - backend_network
+        depends_on:
+            postgres:
+                condition: service_healthy
+        restart: always
+    
+    nginx:
+        container_name: nginx
+        image: nginx:alpine
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./nginx/certs:/etc/nginx/certs:ro
+        depends_on:
+            - backend
+            - frontend
+        networks:
+            - frontend_network
+            - backend_network
+        restart: always
 
 networks:
     frontend_network:
@@ -86,3 +119,4 @@ networks:
 volumes:
   postgres_data:
   uploads_data:
+  backups:

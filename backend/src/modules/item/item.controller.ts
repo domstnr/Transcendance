@@ -35,6 +35,12 @@ export class ItemController {
         };
     }
 
+    @Get('seller/:userId')
+    async getSellerItems(@Param('userId') userId: string) {
+        const items = await this.itemService.findBySellerId(userId);
+        return { items };
+    }
+
     @Get(':id')
     async getItem(@Param('id') id: string) {
         const item = await this.itemService.findById(id);

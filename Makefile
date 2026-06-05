@@ -42,3 +42,18 @@ clean:
 
 check-env:
 	@test -f .env || (printf "\033[31mError: .env file not found\033[0m\n"; exit 1)
+
+backup:
+	docker exec -it db-backup bash -c 'pg_dump --clean --if-exists -h $$POSTGRES_HOST -U $$POSTGRES_USER $$POSTGRES_DB | gzip > /backups/manual_backup_$$(date +%Y%m%d_%H%M%S).sql.gz && echo "Backup done."'
+
+restore:
+	bash scripts/restore.sh
+
+certs:
+	mkdir -p nginx/certs
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+		-keyout nginx/certs/key.pem \
+		-out nginx/certs/cert.pem \
+		-subj "/CN=localhost"
+
+

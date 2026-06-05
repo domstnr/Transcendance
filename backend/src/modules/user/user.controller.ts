@@ -9,6 +9,8 @@ import {
     UseGuards,
     UseInterceptors,
     UploadedFile,
+    Param,
+    NotFoundException,
 } from "@nestjs/common";
 import type { Request } from "express";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -119,6 +121,18 @@ export class UserController {
         return {
             status: 'success',
             message: 'Your account has been deleted',
+        };
+    }
+
+    @Get(':userId')
+    @UseGuards(JwtAuthGuard)
+    async getPublicProfile(@Param('userId') userId: string) {
+        const user = await this.userService.findPublicProfile(userId);
+        return {
+            userId: user.id,
+            username: user.username,
+            avatarUrl: user.avatarUrl ?? null,
+            isOnline: user.isOnline,
         };
     }
 }

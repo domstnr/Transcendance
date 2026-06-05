@@ -9,6 +9,8 @@ import ChatPage from './features/chat/ChatPage'
 import FriendsPage from './features/friends/FriendsPage'
 import FriendRequestsPage from './features/friends/FriendRequestsPage'
 import UserSearchPage from './features/friends/UserSearchPage'
+import PublicProfilePage from './features/profile/PublicProfilePage'
+import StatusPage from './features/health/StatusPage'
 import './App.css'
 
 function App() {
@@ -65,6 +67,15 @@ function App() {
       />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route
+        path="/user/:userId"
+        element={
+          <ProtectedRoute>
+            <PublicProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/status" element={<StatusPage />} />
       </Routes>
     </>
   )

@@ -50,9 +50,7 @@ function RegisterPage() {
             }
             const response = await register(credentials)
             setMessage(response.message)
-            console.log('register response', response)
         } catch (error) {
-            console.log('register error', error)
             setError(error instanceof Error ? error.message : 'error: register request failed.')
         } finally {
             setIsSubmitting(false)
