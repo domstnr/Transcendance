@@ -1,25 +1,29 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import type { GitHubCodeRequest } from './types'
+import { handleGitHubCallback } from './authService'
+import { useAuth } from './AuthContext'
 
 function CallbackPage() {
-  const [searchParams] = useSearchParams()
-
-  useEffect(() => {
-    const code = searchParams.get('code')
-    const error = searchParams.get('error')
-
-    if (error) {
-      console.error('GitHub auth error:', error)
-      return
+    const [searchParams] = useSearchParams()
+    const processGitHubCallback = async () => {
+        const code = searchParams.get('code')
+        const error = searchParams.get('error')
+        if (error) {
+            console.error('GitHub auth error:', error)
+            return
+        }
+        try {
+            const response = await handleGitHubCallback({ code });
+            console.log('Response:', response);
+        } 
+        catch (error) {
+            console.error(error.message);
+        }
     }
-
-    if (code) {
-      console.log('GitHub authorization code:', code)
-      // Later: send this to your backend
-    }
-  }, [searchParams])
-
-  return <div>Processing GitHub login...</div>
+    useEffect(() => {
+        processGitHubCallback()
+    }, [searchParams])
+    return <div>Processing GitHub login...</div>
 }
-
 export default CallbackPage

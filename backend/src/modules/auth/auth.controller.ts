@@ -67,6 +67,12 @@ export class AuthController {
         return { message: 'Logout successful' };
     }
 
+    @Post('github/callback')
+    async handleGitHubCallback(@Body() codeDto: GitHubCodeDto) {
+        await this.authService.handleGitHubCode(codeDto);
+        return { message: 'GitHub code received' };
+    }
+
     @Patch('password')
     @HttpCode(HttpStatus.OK)
     @UseGuards(JwtAuthGuard)

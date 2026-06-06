@@ -5,7 +5,9 @@ import type {
     LoginRequest,
     LoginResponse,
     RegisterRequest,
-    RegisterResponse 
+    RegisterResponse,
+    GitHubCodeRequest,
+    GitHubCodeResponse
 } from './types'
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
@@ -32,5 +34,14 @@ export async function changePassword(data: ChangePasswordRequest): Promise<Chang
         return response.data
     } catch (error) {
         throw new Error(extractHttpErrorMessage(error) ?? 'error: request failed')
+    }
+}
+
+export async function handleGitHubCallback(data: GitHubCodeRequest): Promise<GitHubCodeResponse> {
+    try {
+        const response = await httpClient.post<GitHubCodeResponse>('/auth/github/callback', data);
+        return response.data;
+    } catch (error) {
+        throw new Error(extractHttpErrorMessage(error) ?? 'error: request failed');
     }
 }

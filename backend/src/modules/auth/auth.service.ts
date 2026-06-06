@@ -5,6 +5,9 @@ import {
     NotFoundException,
     UnauthorizedException 
 } from "@nestjs/common";
+import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { JwtService } from "@nestjs/jwt";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
 import { generateHash, verifyHash } from "./utils/argon2.util";
@@ -24,6 +27,8 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly eventBus: EventBus,
         private readonly jwtService: JwtService,
+        private configService: ConfigService,
+        private httpService: HttpService,
     ){}
 
     async register(dto: RegisterDto) {
@@ -130,7 +135,36 @@ export class AuthService {
         return { message: 'Password updated successfully.' };
     }
 
-    
+    async handleGitHubCode(codeDto: GitHubCodeDto): Promise<void> {
+        const { code } = codeDto;
+        console.log(`Received GitHub code: ${code}`);
+        const accessToken = await this.exchangeCodeForToken(code);
+        console.log(`GitHub access token: ${accessToken}`);
+    }
+
+    private async exchangeCodeForToken(code: string): Promise<string> {
+        const clientId = this.configService.get<string>('GITHUB_CLIENT_ID');
+        const clientSecret = this.configService.get<string>('GITHUB_SECRET');
+
+        /*const response = await firstValueFrom(
+            this.httpService.post('https://github.com/login/oauth/access_token', 
+                new URLSearchParams({
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    code,
+                }),
+                {
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                },
+            ),
+        );
+        return response.data.access_token;*/
+        return "test"
+    }
+
     private async generateTokens(userId: string, username: string) {
         const accessPayload: JwtPayload = {
             sub: userId,

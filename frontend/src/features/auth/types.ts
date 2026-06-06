@@ -34,3 +34,11 @@ export type ChangePasswordRequest = {
 export type ChangePasswordResponse = {
     message: string
 }
+
+export interface GitHubCodeRequest {
+  code: string;
+}
+
+export interface GitHubCodeResponse {
+  message: string;
+}

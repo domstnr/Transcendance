@@ -5,10 +5,11 @@ import { JwtModule } from "@nestjs/jwt";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { WsJwtGuard } from "./guards/ws-jwt.guard";
 import { UserModule } from "../user/user.module";
-
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-    imports: [UserModule,
+    imports: [HttpModule, ConfigModule, UserModule,
     JwtModule.register({
         secret: process.env.JWT_SECRET || 'MySecret',
         signOptions: { expiresIn: '15m' },

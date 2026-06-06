@@ -30,6 +30,8 @@ services:
             - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
             - PORT=3000
             - FRONTEND_ORIGIN=${FRONTEND_ORIGIN}
+            - VITE_GITHUB_CLIENT_ID=${VITE_GITHUB_CLIENT_ID}
+            - GITHUB_SECRET=${GITHUB_SECRET}
         restart: always
         networks:
             - frontend_network
