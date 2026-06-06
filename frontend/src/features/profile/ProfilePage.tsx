@@ -283,6 +283,7 @@ function ProfilePage() {
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     maxLength={120}
+                    placeholder="Listing title"
                   />
                 </label>
 
@@ -292,11 +293,12 @@ function ProfilePage() {
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     rows={5}
+                    placeholder="Describe your item"
                   />
                 </label>
 
                 <label>
-                  Condition
+                  Condition (1-10)
                   <input
                     type="number"
                     min="1"
@@ -304,6 +306,7 @@ function ProfilePage() {
                     step="1"
                     value={condition}
                     onChange={(event) => setCondition(event.target.value)}
+                    placeholder="Condition out of 10"
                   />
                 </label>
 
@@ -331,6 +334,7 @@ function ProfilePage() {
                         step="0.01"
                         value={startPrice}
                         onChange={(event) => setStartPrice(event.target.value)}
+                        placeholder="Start price"
                       />
                     </label>
 
