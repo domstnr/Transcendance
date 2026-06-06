@@ -11,6 +11,7 @@ import FriendRequestsPage from './features/friends/FriendRequestsPage'
 import UserSearchPage from './features/friends/UserSearchPage'
 import PublicProfilePage from './features/profile/PublicProfilePage'
 import StatusPage from './features/health/StatusPage'
+import CallbackPage from './features/auth/GithubCallback.tsx'
 import './App.css'
 
 function App() {
@@ -76,6 +77,7 @@ function App() {
         }
       />
       <Route path="/status" element={<StatusPage />} />
+      <Route path="/auth/callback" element={<CallbackPage />} />
       </Routes>
     </>
   )
