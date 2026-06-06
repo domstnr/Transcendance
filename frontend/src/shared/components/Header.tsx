@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
+import logo from '../../assets/transauction2.svg'
 
 function Header() {
     const { isAuthenticated, logout, user } = useAuth()
@@ -15,7 +16,7 @@ function Header() {
         <header className="app-header">
             <div className="app-header-inner">
                 <NavLink to="/" className="app-header-brand" aria-label="Transcendance home">
-                    Transcendance
+                    <img className="app-header-logo" src={logo} alt="Transauction" />
                 </NavLink>
 
                 <nav className="app-header-nav" aria-label="Primary navigation">
