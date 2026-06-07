@@ -81,3 +81,7 @@ To restore from a backup:
   1. Make sure the stack is running (make up)
   2. Run: make restore
   3. Follow the prompts to select a backup file
+
+## Privacy policy and Terms of Service
+
+To access the privacy policy page and terms of service page, add /privacy or /terms to the URL
