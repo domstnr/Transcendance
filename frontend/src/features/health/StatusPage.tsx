@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react'
-import type {
-	ServiceStatus,
-	HealthResponse,
-} from './types'
+import type { HealthResponse } from './types'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
