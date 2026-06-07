@@ -900,10 +900,7 @@ input[type="number"]::-webkit-outer-spin-button {
   flex: 1;
 }
 
-/*
- * Bootstrap : classes présentes pour la soutenance,
- * rendu visuel aligné sur le thème Transcendance (priorité sur Bootstrap).
- */
+/* Bootstrap */
 #principal .form-control {
   padding: 12px 14px;
   border: 1px solid var(--border-input);
