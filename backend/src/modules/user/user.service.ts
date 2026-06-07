@@ -78,6 +78,13 @@ export class UserService {
         return this.prisma.user.delete({ where: { id } });
     }
 
+    async getAllUsers() {
+        return this.prisma.user.findMany({
+            select: { id: true, username: true, email: true, isOnline: true, createdAt: true },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+
     async findById(id: string) {
         return this.prisma.user.findFirst({
             where: { id },
