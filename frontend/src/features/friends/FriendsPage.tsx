@@ -62,7 +62,9 @@ function FriendsPage() {
                 <li key={friend.id} className="friend-item">
                   <Avatar username={friend.username} avatarUrl={friend.avatarUrl} />
                   <span className={friend.isOnline ? 'status online' : 'status offline'}>●</span>
-                  <strong>{friend.username}</strong>
+                  <Link className="friend-name-link" to={`/user/${friend.id}`}>
+                    {friend.username}
+                  </Link>
                   {!friend.isOnline && friend.lastSeen ? (
                     <small>last seen {new Date(friend.lastSeen).toLocaleString()}</small>
                   ) : null}

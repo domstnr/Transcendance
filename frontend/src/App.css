@@ -164,20 +164,99 @@ body {
 }
 
 .app-header-actions {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
 }
 
+.app-header-menu {
+  position: relative;
+  width: 170px;
+}
+
 .app-header-user {
-  max-width: 140px;
+  position: relative;
+  min-height: 38px;
+  width: 100%;
+  max-width: none;
+  padding: 8px 30px 8px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-light);
   color: var(--color-secondary);
   font-size: 0.92rem;
   font-weight: 700;
+  cursor: pointer;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.app-header-user::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-65%) rotate(45deg);
+}
+
+.app-header-user[aria-expanded="true"],
+.app-header-user:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  color: var(--color-primary);
+}
+
+.app-header-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.app-header-menu-link {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-secondary);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.app-header-menu-link:hover {
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+
+.app-header-menu-logout:hover {
+  background: var(--color-error);
+  color: var(--color-white);
 }
 
 .app-header-logout {
@@ -211,20 +290,16 @@ body {
     flex: 1;
   }
 
-  .app-header-nav {
-    order: 3;
-    width: 100%;
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-top: 0;
-  }
-
   .app-header-actions {
     gap: 8px;
   }
 
   .app-header-user {
-    max-width: 90px;
+    max-width: none;
+  }
+
+  .app-header-menu {
+    width: 150px;
   }
 }
 
@@ -852,6 +927,16 @@ input[type="number"]::-webkit-outer-spin-button {
   margin-left: auto;
 }
 
+.friend-name-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.friend-name-link:hover {
+  color: var(--color-accent);
+}
+
 .friend-actions {
   display: flex;
   align-items: center;
@@ -1009,6 +1094,13 @@ input[type="number"]::-webkit-outer-spin-button {
   color: var(--color-white);
 }
 
+.chat-message--seller .chat-bubble {
+  background: var(--color-accent);
+  border-color: var(--color-accent-hover-border);
+  color: var(--color-white);
+  box-shadow: var(--shadow-accent);
+}
+
 .chat-message-meta {
   display: flex;
   align-items: center;
@@ -1027,6 +1119,23 @@ input[type="number"]::-webkit-outer-spin-button {
 .chat-message--own .chat-message-meta span,
 .chat-message--own .chat-bubble time {
   color: var(--color-text-on-primary-muted);
+}
+
+.chat-message--seller .chat-message-meta span,
+.chat-message--seller .chat-bubble time {
+  color: var(--color-white);
+}
+
+.chat-seller-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .chat-bubble p {
@@ -1286,7 +1395,6 @@ input[type="number"]::-webkit-outer-spin-button {
     max-width: 145px;
   }
 
-  .app-header-logout,
   .app-header-link {
     font-size: 0.88rem;
     min-height: 34px;
@@ -1294,6 +1402,13 @@ input[type="number"]::-webkit-outer-spin-button {
   }
 
   .app-header-user {
-    display: none;
+    max-width: none;
+    font-size: 0.88rem;
+    min-height: 34px;
+    padding: 6px 28px 6px 10px;
+  }
+
+  .app-header-menu {
+    width: 130px;
   }
 }

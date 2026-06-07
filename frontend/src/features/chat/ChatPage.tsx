@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { getAuction } from '../auction/auctionService'
 import { getMessages } from './chatService'
 import { useChat } from './useChat'
 
@@ -23,6 +24,7 @@ function ChatPage() {
     const [input, setInput] = useState('')
     const [isLoadingHistory, setIsLoadingHistory] = useState(true)
     const [accessError, setAccessError] = useState<string | null>(null)
+    const [sellerId, setSellerId] = useState<string | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
 
     const { messages, setMessages, isConnected, error, sendMessage } = useChat(auctionId!)
@@ -30,7 +32,11 @@ function ChatPage() {
     useEffect(() => {
         async function loadHistory() {
             try {
-                const data = await getMessages(auctionId!)
+                const [auction, data] = await Promise.all([
+                    getAuction(auctionId!),
+                    getMessages(auctionId!),
+                ])
+                setSellerId(auction?.sellerId ?? null)
                 setMessages(data.message.reverse())
             } catch (err) {
                 setAccessError(err instanceof Error ? err.message : 'Access denied')
@@ -83,14 +89,26 @@ function ChatPage() {
                 ) : (
                     messages.map((msg) => {
                         const isOwnMessage = user?.userId === msg.senderId
+                        const isSellerMessage = sellerId === msg.senderId
 
                         return (
-                        <article key={msg.id} className={isOwnMessage ? 'chat-message chat-message--own' : 'chat-message'}>
+                        <article
+                            key={msg.id}
+                            className={[
+                                'chat-message',
+                                isOwnMessage ? 'chat-message--own' : '',
+                                isSellerMessage ? 'chat-message--seller' : '',
+                            ].filter(Boolean).join(' ')}
+                        >
                             <Avatar username={msg.sender.username} avatarUrl={msg.sender.avatarUrl} />
                             <div className="chat-bubble">
                                 <div className="chat-message-meta">
-                                    <strong>{msg.sender.username}</strong>
-                                    {isOwnMessage ? <span>you</span> : null}
+                                    <strong>{isOwnMessage ? 'you' : msg.sender.username}</strong>
+                                    {isSellerMessage ? (
+                                        <span className="chat-seller-badge" title="Seller of this auction">
+                                            Seller
+                                        </span>
+                                    ) : null}
                                 </div>
                                 <p>{msg.content}</p>
                                 <time dateTime={msg.createdAt}>
