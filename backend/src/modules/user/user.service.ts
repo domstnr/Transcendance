@@ -73,14 +73,9 @@ export class UserService {
     }
 
     async deleteUser(id: string) {
-        try {
-            return await this.prisma.user.delete({
-                where: { id },
-            });
-        } catch (error) {
-            console.error('check for this', error);
-            throw new NotFoundException('Delete action impossible: User Unfound.');
-        }
+        const user = await this.prisma.user.findUnique({ where: { id } });
+        if (!user) throw new NotFoundException('User not found.');
+        return this.prisma.user.delete({ where: { id } });
     }
 
     async findById(id: string) {
