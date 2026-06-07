@@ -252,7 +252,9 @@ function ProfilePage() {
                       {deletingItemId === item.id ? 'Deleting...' : 'Delete'}
                     </button>
                     {item.auction ? (
-                      <Link to={`/auction/${item.auction.id}/chat`}>Enter chat room</Link>
+                      <Link className="btn button-secondary" to={`/auction/${item.auction.id}/chat`}>
+                        Enter chat room
+                      </Link>
                     ) : null}
                   </div>
                 </article>

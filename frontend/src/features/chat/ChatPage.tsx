@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { getAuction } from '../auction/auctionService'
 import { getMessages } from './chatService'
 import { useChat } from './useChat'
 
@@ -8,9 +9,9 @@ const ASSET_URL = ''
 
 function Avatar({ username, avatarUrl }: { username: string; avatarUrl: string | null }) {
     return (
-        <span style={{ display: 'inline-flex', width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: '#ccc', alignItems: 'center', justifyContent: 'center', fontSize: 13, verticalAlign: 'middle' }}>
+        <span className="friend-avatar chat-avatar">
             {avatarUrl
-                ? <img src={`${ASSET_URL}${avatarUrl}`} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                ? <img src={`${ASSET_URL}${avatarUrl}`} alt={username} />
                 : username[0].toUpperCase()
             }
         </span>
@@ -23,6 +24,7 @@ function ChatPage() {
     const [input, setInput] = useState('')
     const [isLoadingHistory, setIsLoadingHistory] = useState(true)
     const [accessError, setAccessError] = useState<string | null>(null)
+    const [sellerId, setSellerId] = useState<string | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
 
     const { messages, setMessages, isConnected, error, sendMessage } = useChat(auctionId!)
@@ -30,7 +32,11 @@ function ChatPage() {
     useEffect(() => {
         async function loadHistory() {
             try {
-                const data = await getMessages(auctionId!)
+                const [auction, data] = await Promise.all([
+                    getAuction(auctionId!),
+                    getMessages(auctionId!),
+                ])
+                setSellerId(auction?.sellerId ?? null)
                 setMessages(data.message.reverse())
             } catch (err) {
                 setAccessError(err instanceof Error ? err.message : 'Access denied')
@@ -55,44 +61,76 @@ function ChatPage() {
     }
 
     if (accessError ?? error) {
-        return <p>{accessError ?? error}</p>
+        return (
+            <section className="chat-section">
+                <p className="alert alert-danger error-message" role="alert">{accessError ?? error}</p>
+            </section>
+        )
     }
 
     return (
-        <section>
-            <h1>Auction chat</h1>
-            <p>{isConnected ? 'Connected' : 'Connecting...'}</p>
+        <section className="chat-section">
+            <header className="chat-header">
+                <div>
+                    <h1 className="chat-title">Auction Chat</h1>
+                    <p className="chat-subtitle">Room for this listing auction</p>
+                </div>
+                <span className={isConnected ? 'chat-status chat-status--online' : 'chat-status'}>
+                    <span className={isConnected ? 'status online' : 'status offline'}>●</span>
+                    {isConnected ? 'Connected' : 'Connecting...'}
+                </span>
+            </header>
 
-            <div style={{ height: '400px', overflowY: 'auto', border: '1px solid #ccc', padding: '8px' }}>
+            <div className="chat-messages" aria-live="polite">
                 {isLoadingHistory ? (
-                    <p>Loading messages...</p>
+                    <p className="empty-state">Loading messages...</p>
+                ) : messages.length === 0 ? (
+                    <p className="empty-state">No messages yet.</p>
                 ) : (
-                    messages.map((msg) => (
-                        <div key={msg.id} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    messages.map((msg) => {
+                        const isOwnMessage = user?.userId === msg.senderId
+                        const isSellerMessage = sellerId === msg.senderId
+
+                        return (
+                        <article
+                            key={msg.id}
+                            className={[
+                                'chat-message',
+                                isOwnMessage ? 'chat-message--own' : '',
+                                isSellerMessage ? 'chat-message--seller' : '',
+                            ].filter(Boolean).join(' ')}
+                        >
                             <Avatar username={msg.sender.username} avatarUrl={msg.sender.avatarUrl} />
-                            <span>
-                                <Link to={`/user/${msg.senderId}`}><strong>{msg.sender.username}</strong></Link>
-                                {user?.userId === msg.senderId ? ' (you)' : ''}
-                                {': '}
-                                {msg.content}
-                                <span style={{ marginLeft: '8px', fontSize: '0.75em', color: '#888' }}>
+                            <div className="chat-bubble">
+                                <div className="chat-message-meta">
+                                    <Link to={`/user/${msg.senderId}`}><strong>{isOwnMessage ? 'you' : msg.sender.username}</strong></Link>
+                                    {isSellerMessage ? (
+                                        <span className="chat-seller-badge" title="Seller of this auction">
+                                            Seller
+                                        </span>
+                                    ) : null}
+                                </div>
+                                <p>{msg.content}</p>
+                                <time dateTime={msg.createdAt}>
                                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                            </span>
-                        </div>
-                    ))
+                                </time>
+                            </div>
+                        </article>
+                        )
+                    })
                 )}
                 <div ref={bottomRef} />
             </div>
 
-            <form onSubmit={handleSubmit}>
+            <form className="chat-form" onSubmit={handleSubmit}>
                 <input
+                    className="form-control"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Type a message..."
                     disabled={!isConnected}
                 />
-                <button type="submit" disabled={!isConnected || !input.trim()}>
+                <button className="btn item-button item-button--primary" type="submit" disabled={!isConnected || !input.trim()}>
                     Send
                 </button>
             </form>
