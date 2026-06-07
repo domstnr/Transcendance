@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { useAuth } from '../auth/AuthContext'
 import { ITEM_CATEGORY_LABELS } from '../item/categoryOptions'
 import ItemThumbnail from '../item/ItemThumbnail'
 import { getOtherUserItems } from '../item/itemService'
-import { placeBid } from '../auction/auctionService'
 import type { ItemSummary } from '../item/types'
 import type { PublicUser } from './types'
 
@@ -12,17 +10,11 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>()
-	const { user: currentUser } = useAuth()
 	const [profile, setProfile] = useState<PublicUser | null>(null)
 	const [profileError, setProfileError] = useState<string | null>(null)
 	const [items, setItems] = useState<ItemSummary[]>([])
 	const [itemsError, setItemsError] = useState<string | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
-	const [bidModalItem, setBidModalItem] = useState<ItemSummary | null>(null)
-	const [bidAmount, setBidAmount] = useState('')
-	const [bidError, setBidError] = useState<string | null>(null)
-	const [isPlacingBid, setIsPlacingBid] = useState(false)
-	const [bidSuccess, setBidSuccess] = useState<string | null>(null)
 
 	useEffect(() => {
 		if (!userId) return
@@ -50,53 +42,9 @@ function PublicProfilePage() {
 		void load()
 	}, [userId])
 
-	async function handlePlaceBid() {
-		if (!bidModalItem?.auction) return
-		setBidError(null)
-		setBidSuccess(null)
-
-		const amount = Number(bidAmount)
-		if (!Number.isFinite(amount) || amount <= 0) {
-			setBidError('Enter a valid amount greater than 0.')
-			return
-		}
-		
-		if (amount <= bidModalItem.auction.currentPrice) {
-			setBidError(`Your bid must be higher than the current price (${bidModalItem.auction.currentPrice}).`)
-			return
-		}
-
-		try {
-			setIsPlacingBid(true)
-			await placeBid(bidModalItem.auction.id, amount)
-			setBidSuccess('Bid placed successfully !')
-			setBidAmount('')
-		} catch (error) {
-			setBidError(error instanceof Error ? error.message : 'Failed to place bid.')
-		} finally {
-			setIsPlacingBid(false)
-		}
-	}
-
-	function openBidModal(item: ItemSummary) {
-		setBidModalItem(item)
-		setBidAmount('')
-		setBidError(null)
-		setBidSuccess(null)
-	}
-
-	function closeBidModal() {
-		if (isPlacingBid) return
-		setBidModalItem(null)
-		setBidError(null)
-		setBidSuccess(null)
-	}
-
 	if (isLoading) return <p>Loading profile...</p>
 	if (profileError) return <p>{profileError}</p>
 	if (!profile) return null
-
-	const isOwnProfile = currentUser?.userId === profile.userId
 
 	return (
 		<section className="profile-page">
@@ -149,72 +97,18 @@ function PublicProfilePage() {
 						<span>Status: {item.auction.status}</span>
 						<span>Ends: {new Date(item.auction.endDate).toLocaleString()}</span>
 						</>
-					) : (
-						<span>No auction</span>
-					)}
-					</div>
-					{!isOwnProfile && item.auction?.status === 'OPEN' ? (
-					<div className="item-card-actions">
-						<button type="button" onClick={() => openBidModal(item)}>
-						Place Bid
-						</button>
-					</div>
-					) : null}
-				</article>
-				))}
+						) : (
+							<span>No auction</span>
+						)}
+						</div>
+					</article>
+					))}
 			</div>
 			) : (
 			<p>{profile.username} has no listings yet.</p>
-			)
-		) : null}
-
-		{bidModalItem ? (
-			<div className="modal-backdrop" role="presentation" onClick={closeBidModal}>
-			<div
-				className="modal-panel"
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby="bid-modal-title"
-				onClick={(e) => e.stopPropagation()}
-			>
-				<div className="modal-header">
-				<h2 id="bid-modal-title">Place a bid on "{bidModalItem.title}"</h2>
-				<button
-					type="button"
-					onClick={closeBidModal}
-					disabled={isPlacingBid}
-					style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}
-					aria-label="Close"
-				>
-					×
-				</button>
-				</div>
-				<div className="modal-form">
-				<p>Current price: ${bidModalItem.auction?.currentPrice}</p>
-				<label>
-					Your bid
-					<input
-					type="number"
-					min="0.01"
-					step="0.01"
-					value={bidAmount}
-					onChange={(e) => setBidAmount(e.target.value)}
-					disabled={isPlacingBid}
-					/>
-				</label>
-				{bidError ? <p style={{ color: 'red' }}>{bidError}</p> : null}
-				{bidSuccess ? <p style={{ color: 'green' }}>{bidSuccess}</p> : null}
-				<div className="modal-actions">
-					<button type="button" onClick={closeBidModal} disabled={isPlacingBid}>Cancel</button>
-					<button type="button" onClick={() => void handlePlaceBid()} disabled={isPlacingBid}>
-					{isPlacingBid ? 'Placing...' : 'Confirm bid'}
-					</button>
-				</div>
-				</div>
-			</div>
-			</div>
-		) : null}
-		</section>
+				)
+			) : null}
+			</section>
 	)
 }
 export default PublicProfilePage
