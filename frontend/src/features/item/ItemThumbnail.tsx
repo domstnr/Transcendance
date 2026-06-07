@@ -5,7 +5,7 @@ type ItemThumbnailProps = {
   title: string
 }
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const ASSET_URL = ''
 
 function ItemThumbnail({ image, title }: ItemThumbnailProps) {
   if (!image) {
@@ -19,7 +19,7 @@ function ItemThumbnail({ image, title }: ItemThumbnailProps) {
   return (
     <img
       className="item-card-thumbnail"
-      src={`${API_URL}${image.url}`}
+      src={`${ASSET_URL}${image.url}`}
       alt={title}
       loading="lazy"
     />

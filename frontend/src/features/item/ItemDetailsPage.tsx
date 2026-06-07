@@ -8,7 +8,7 @@ import { ITEM_CATEGORY_LABELS } from './categoryOptions'
 import { getItem } from './itemService'
 import type { ItemDetails } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const ASSET_URL = ''
 
 function formatCountdown(endDate: string, now: number) {
   const remainingSeconds = Math.max(0, Math.floor((new Date(endDate).getTime() - now) / 1000))
@@ -164,7 +164,6 @@ function ItemDetailsPage() {
   }
 
   const {
-    isConnected: isLiveConnected,
     error: liveUpdateError,
   } = useAuctionUpdates(auction?.id ?? null, handleAuctionUpdate)
 
@@ -225,7 +224,7 @@ function ItemDetailsPage() {
         {selectedImage ? (
           <img
             className="item-details-main-image"
-            src={`${API_URL}${selectedImage.url}`}
+            src={`${ASSET_URL}${selectedImage.url}`}
             alt={`${item.title}, image ${selectedImageIndex + 1}`}
           />
         ) : (
@@ -245,7 +244,7 @@ function ItemDetailsPage() {
                 aria-label={`Show image ${index + 1}`}
                 aria-pressed={index === selectedImageIndex}
               >
-                <img src={`${API_URL}${image.url}`} alt="" />
+                <img src={`${ASSET_URL}${image.url}`} alt="" />
               </button>
             ))}
           </div>
@@ -262,7 +261,7 @@ function ItemDetailsPage() {
 
         <div className="item-details-seller">
           {item.seller.avatarUrl ? (
-            <img src={`${API_URL}${item.seller.avatarUrl}`} alt="" />
+            <img src={`${ASSET_URL}${item.seller.avatarUrl}`} alt="" />
           ) : (
             <span aria-hidden="true">{item.seller.username[0].toUpperCase()}</span>
           )}
@@ -304,9 +303,6 @@ function ItemDetailsPage() {
             </div>
             {auction ? (
               <div className="bidding-statuses">
-                <span className={`live-status ${isLiveConnected ? 'is-connected' : ''}`}>
-                  {isLiveConnected ? 'Live' : 'Connecting'}
-                </span>
                 <span className={`auction-status auction-status-${auction.status.toLowerCase()}`}>
                   {auction.status}
                 </span>
@@ -325,6 +321,10 @@ function ItemDetailsPage() {
                     : 'Auction ended'}
                 </small>
               </div>
+
+              <Link className="btn button-secondary item-details-chat-link" to={`/auction/${auction.id}/chat`}>
+                Enter chat room
+              </Link>
 
               <form className="bid-form" onSubmit={(event) => void handlePlaceBid(event)}>
                 <label htmlFor="bid-amount">Your bid</label>
@@ -372,7 +372,7 @@ function ItemDetailsPage() {
                       <li key={bid.id}>
                         <div className="bidder">
                           {bid.bidder.avatarUrl ? (
-                            <img src={`${API_URL}${bid.bidder.avatarUrl}`} alt="" />
+                            <img src={`${ASSET_URL}${bid.bidder.avatarUrl}`} alt="" />
                           ) : (
                             <span aria-hidden="true">
                               {bid.bidder.username[0].toUpperCase()}

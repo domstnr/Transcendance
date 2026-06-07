@@ -5,6 +5,7 @@ import { ITEM_CATEGORIES, ITEM_CATEGORY_LABELS, type ItemCategory } from '../ite
 import ItemThumbnail from '../item/ItemThumbnail'
 import {
     createItem,
+    deleteItemImage,
     deleteItem,
     getCurrentUserItems,
     getItem,
@@ -155,6 +156,25 @@ function ProfilePage() {
         setImageFiles((currentFiles) =>
             currentFiles.filter((_file, index) => index !== indexToRemove),
         )
+    }
+
+    async function removeExistingImage(imageId: string) {
+        if (!selectedItem) {
+            return
+        }
+
+        try {
+            setIsSavingItem(true)
+            await deleteItemImage(selectedItem.id, imageId)
+            setExistingImages((currentImages) =>
+                currentImages.filter((image) => image.id !== imageId),
+            )
+            await loadItems()
+        } catch (error) {
+            setModalError(error instanceof Error ? error.message : 'Failed to delete image.')
+        } finally {
+            setIsSavingItem(false)
+        }
     }
 
     async function handleItemSubmit(event: FormEvent<HTMLFormElement>) {
@@ -459,16 +479,18 @@ function ProfilePage() {
                   </>
                 ) : null}
 
-                <label>
+                <label className="item-file-field">
                   Images
-                  <input
-                    type="file"
-                    className="form-control"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                    onChange={handleImageSelection}
-                    disabled={isSavingItem || isLoadingItemImages}
-                  />
+                  <span className="file-input-label item-file-button">
+                    Choose file
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      onChange={handleImageSelection}
+                      disabled={isSavingItem || isLoadingItemImages}
+                    />
+                  </span>
                   <small>
                     JPEG, PNG or WebP. Maximum {MAX_ITEM_IMAGES} images, 10 MB each.
                   </small>
@@ -482,6 +504,14 @@ function ProfilePage() {
                       <figure key={image.id} className="item-image-preview">
                         <img src={`${ASSET_URL}${image.url}`} alt="Current item" />
                         <figcaption>Current</figcaption>
+                        <button
+                          type="button"
+                          className="btn item-button item-button--danger item-image-remove"
+                          onClick={() => void removeExistingImage(image.id)}
+                          disabled={isSavingItem}
+                        >
+                          Remove
+                        </button>
                       </figure>
                     ))}
                     {imagePreviews.map((preview, index) => (
@@ -489,6 +519,7 @@ function ProfilePage() {
                         <img src={preview} alt={`Selected upload ${index + 1}`} />
                         <button
                           type="button"
+                          className="btn item-button item-button--danger item-image-remove"
                           onClick={() => removeSelectedImage(index)}
                           disabled={isSavingItem}
                         >
