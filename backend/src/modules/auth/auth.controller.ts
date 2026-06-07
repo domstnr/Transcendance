@@ -7,7 +7,9 @@ import {
     Post,
     Res,
     Patch,
-    UseGuards 
+    UseGuards,
+    ConflictException,
+    NotFoundException
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { JwtAuthGuard } from "./strategies/jwt-auth.guard";
@@ -16,11 +18,13 @@ import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshDto } from "./dto/refresh.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { UserService } from "../user/user.service";
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
+        private readonly userService: UserService,
     ) {}
 
     /* -------------------------------------------------------------------------- */
@@ -68,9 +72,42 @@ export class AuthController {
     }
 
     @Post('github/callback')
-    async handleGitHubCallback(@Body() codeDto: GitHubCodeDto) {
-        await this.authService.handleGitHubCode(codeDto);
-        return { message: 'GitHub code received' };
+    @HttpCode(HttpStatus.OK)
+    async handleGitHubCallback(
+        @Body() codeDto: GitHubCodeDto,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        console.log('A user is trying to login with github: ', codeDto.code);
+        const gitData = await this.authService.handleGitHubCode(codeDto);
+        if (gitData.username == undefined)
+        {
+            throw new NotFoundException("Failed to fetch username!");
+        }
+        if (gitData.email == undefined)
+        {
+            throw new NotFoundException("Failed to fetch email!");
+        }
+        try
+        {
+            const registerDto: RegisterDto = {
+                username: gitData.username,
+                email: gitData.email,
+                password: '1234567890GitMasterPass...'
+            };
+            await this.authService.register(registerDto);
+        }
+        catch (error: unknown)
+        {
+            if (!(error instanceof ConflictException))
+                throw error;
+        }
+        const loginDto: LoginDto = {
+            email: gitData.email,
+            password: '1234567890GitMasterPass...'
+        };
+        const response = await this.authService.login(loginDto);
+        setAuthCookies(res, response.tokens.accessToken, response.tokens.refreshToken);
+        return response;
     }
 
     @Patch('password')
@@ -85,7 +122,6 @@ export class AuthController {
         clearAuthCookies(res);
         return response;
     }
-
 }
 
 const ACCESS_COOKIE_NAME = 'jwt';

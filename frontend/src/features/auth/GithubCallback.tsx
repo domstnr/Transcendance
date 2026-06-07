@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { GitHubCodeRequest } from './types'
 import { handleGitHubCallback } from './authService'
@@ -16,12 +16,18 @@ function CallbackPage() {
         try {
             const response = await handleGitHubCallback({ code });
             console.log('Response:', response);
+            window.location.href = '/profile'
         } 
         catch (error) {
             console.error(error.message);
+            window.location.href = '/login'
         }
     }
+    const hasExecuted = useRef(false);
     useEffect(() => {
+        if (hasExecuted.current)
+            return;
+        hasExecuted.current = true;
         processGitHubCallback()
     }, [searchParams])
     return <div>Processing GitHub login...</div>

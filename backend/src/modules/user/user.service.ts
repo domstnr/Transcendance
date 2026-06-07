@@ -18,6 +18,15 @@ export class UserService {
         }
     }
 
+    async checkUserExistsExact(email: string, username: string): Promise<boolean> {
+        const existingUser = await this.prisma.user.findFirst({
+            where: {
+                AND: [{ email }, { username }],
+            },
+        });
+        return !existingUser; // Returns false if user exists, true if doesn't
+    }
+
     async createUser(email: string, username: string, passwordHash: string) {
         return this.prisma.user.create({
             data: {

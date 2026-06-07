@@ -60,7 +60,7 @@ function RegisterPage() {
     function handleGitHubRegister() {
         const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID
         const redirectUri = import.meta.env.VITE_GITHUB_CALLBACK
-        const scope = 'user:email'
+        const scope = 'read:user user:email'
         const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`
         window.location.href = githubAuthUrl
     }
@@ -111,7 +111,7 @@ function RegisterPage() {
               {error ? <div id="error-2">{error}</div> : null}
               {message ? <div id="message-2">{message}</div> : null}
 
-            <button id="button" type="button" onClick={handleGitHubRegister}>Register with GitHub</button>
+            <button id="button" type="button" onClick={handleGitHubRegister}>Login with GitHub</button>
 
               <button id="button" type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Création...' : 'Register'}

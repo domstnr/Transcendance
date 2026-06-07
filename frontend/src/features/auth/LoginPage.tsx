@@ -49,6 +49,14 @@ function LoginPage() {
         }
     }
 
+    function handleGitHubLogin() {
+        const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID
+        const redirectUri = import.meta.env.VITE_GITHUB_CALLBACK
+        const scope = 'read:user user:email'
+        const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`
+        window.location.href = githubAuthUrl
+    }
+
     return (
       <div id="wrapper">
         <div id="principal">
@@ -93,6 +101,7 @@ function LoginPage() {
                 </div>
               ) : null}
 
+            <button id="button" type="button" onClick={handleGitHubLogin}>Login with GitHub</button>
               <button
                 id="button"
                 type="submit"

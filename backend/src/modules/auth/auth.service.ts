@@ -3,7 +3,8 @@ import {
     Injectable,
     Logger,
     NotFoundException,
-    UnauthorizedException 
+    UnauthorizedException,
+    ConflictException
 } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
@@ -135,34 +136,63 @@ export class AuthService {
         return { message: 'Password updated successfully.' };
     }
 
-    async handleGitHubCode(codeDto: GitHubCodeDto): Promise<void> {
+    async handleGitHubCode(codeDto: GitHubCodeDto): Promise<{ username: string; email: string }>
+    {
         const { code } = codeDto;
-        console.log(`Received GitHub code: ${code}`);
         const accessToken = await this.exchangeCodeForToken(code);
-        console.log(`GitHub access token: ${accessToken}`);
+        if (accessToken == undefined)
+            return;
+        const user = await this.fetchGitHubUser(accessToken);
+        const email = await this.fetchGitHubUserEmail(accessToken);
+        return {username: user, email: email };
     }
 
     private async exchangeCodeForToken(code: string): Promise<string> {
-        const clientId = this.configService.get<string>('GITHUB_CLIENT_ID');
+        const clientId = this.configService.get<string>('VITE_GITHUB_CLIENT_ID');
         const clientSecret = this.configService.get<string>('GITHUB_SECRET');
 
-        /*const response = await firstValueFrom(
-            this.httpService.post('https://github.com/login/oauth/access_token', 
-                new URLSearchParams({
-                    client_id: clientId,
-                    client_secret: clientSecret,
-                    code,
-                }),
-                {
-                    headers: {
+        const response = await firstValueFrom(
+            this.httpService.post('https://github.com/login/oauth/access_token', {
+                client_id: clientId,
+                client_secret: clientSecret,
+                code,
+            }, 
+            {
+                headers: {
                         Accept: 'application/json',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
                 },
-            ),
+            }),
         );
-        return response.data.access_token;*/
-        return "test"
+        return response.data.access_token;
+    }
+
+    private async fetchGitHubUser(accessToken: string): Promise<string> {
+        const response = await firstValueFrom(
+            this.httpService.get('https://api.github.com/user', {
+                headers: {
+                    Accept: 'application/vnd.github+json',
+                    Authorization: `Bearer ${accessToken}`,
+                    'X-GitHub-Api-Version':'2026-03-10',
+                    'User-Agent': 'Transauction-App',
+                },
+            }),
+        );
+        return response.data.login;
+    }
+
+    private async fetchGitHubUserEmail(accessToken: string): Promise<string> {
+        const response = await firstValueFrom(
+            this.httpService.get('https://api.github.com/user/emails', {
+                headers: {
+                    Accept: 'application/vnd.github+json',
+                    Authorization: `Bearer ${accessToken}`,
+                    'X-GitHub-Api-Version':'2026-03-10',
+                    'User-Agent': 'Transauction-App',
+                },
+            }),
+        );
+        const primaryEmail = response.data.find((e: any) => e.primary)?.email;
+        return primaryEmail || response.data[0]?.email;
     }
 
     private async generateTokens(userId: string, username: string) {
