@@ -278,6 +278,59 @@ body {
   box-shadow: var(--shadow-error);
 }
 
+.app-footer {
+  width: 100%;
+  margin: 32px auto 0;
+  padding: 18px 16px 24px;
+}
+
+.app-footer-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.app-footer-link {
+  color: var(--color-secondary);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.app-footer-link:hover {
+  color: var(--color-primary);
+}
+
+.app-footer-sep {
+  color: var(--color-secondary);
+}
+
+.home-section {
+  width: 100%;
+  max-width: 760px;
+  min-height: calc(100vh - 220px);
+  margin: 0 auto;
+  padding: 48px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.home-section h1 {
+  color: var(--color-primary);
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.home-section p {
+  color: var(--color-secondary);
+  margin: 0;
+}
+
 @media (max-width: 720px) {
   .app-header-inner {
     min-height: auto;
