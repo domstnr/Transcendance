@@ -1,11 +1,11 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { updateCurrentUser, uploadAvatar } from './profileService.ts'
+import { disableTwoFactor, enableTwoFactor, setupTwoFactor, updateCurrentUser, uploadAvatar } from './profileService.ts'
 import type { UpdateProfileRequest } from './types'
 import { changePassword } from '../auth/authService'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const ASSET_URL = ''
 
 function UpdateProfilePage() {
     const { user, refreshUser } = useAuth()
@@ -24,6 +24,11 @@ function UpdateProfilePage() {
     const [avatarError, setAvatarError] = useState<string | null>(null)
     const [avatarMessage, setAvatarMessage] = useState<string | null>(null)
     const [isAvatarSubmitting, setIsAvatarSubmitting] = useState(false)
+    const [twoFactorQrCode, setTwoFactorQrCode] = useState<string | null>(null)
+    const [twoFactorCode, setTwoFactorCode] = useState('')
+    const [twoFactorError, setTwoFactorError] = useState<string | null>(null)
+    const [twoFactorMessage, setTwoFactorMessage] = useState<string | null>(null)
+    const [isTwoFactorSubmitting, setIsTwoFactorSubmitting] = useState(false)
 
     if (!user) {
         return <p>Loading profile...</p>
@@ -111,93 +116,232 @@ function UpdateProfilePage() {
         }
     }
 
+    async function handleTwoFactorSetup() {
+        setTwoFactorError(null)
+        setTwoFactorMessage(null)
+
+        try {
+            setIsTwoFactorSubmitting(true)
+            const response = await setupTwoFactor()
+            setTwoFactorQrCode(response.qrCodeDataUrl)
+            setTwoFactorMessage('Scan the QR code, then enter the 6-digit code.')
+        } catch (error) {
+            setTwoFactorError(error instanceof Error ? error.message : '2FA setup failed.')
+        } finally {
+            setIsTwoFactorSubmitting(false)
+        }
+    }
+
+    async function handleTwoFactorEnable(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+        setTwoFactorError(null)
+        setTwoFactorMessage(null)
+
+        const trimmedCode = twoFactorCode.trim()
+
+        if (!/^\d{6}$/.test(trimmedCode)) {
+            setTwoFactorError('Enter the 6-digit code from your authenticator app.')
+            return
+        }
+
+        try {
+            setIsTwoFactorSubmitting(true)
+            const response = await enableTwoFactor(trimmedCode)
+            setTwoFactorMessage(response.message)
+            setTwoFactorQrCode(null)
+            setTwoFactorCode('')
+            await refreshUser()
+        } catch (error) {
+            setTwoFactorError(error instanceof Error ? error.message : '2FA activation failed.')
+        } finally {
+            setIsTwoFactorSubmitting(false)
+        }
+    }
+
+    async function handleTwoFactorDisable() {
+        const shouldDisable = window.confirm('Disable 2FA for your account?')
+
+        if (!shouldDisable) {
+            return
+        }
+
+        setTwoFactorError(null)
+        setTwoFactorMessage(null)
+
+        try {
+            setIsTwoFactorSubmitting(true)
+            const response = await disableTwoFactor()
+            setTwoFactorQrCode(null)
+            setTwoFactorCode('')
+            setTwoFactorMessage(response.message)
+            await refreshUser()
+        } catch (error) {
+            setTwoFactorError(error instanceof Error ? error.message : '2FA disable failed.')
+        } finally {
+            setIsTwoFactorSubmitting(false)
+        }
+    }
+
     return (
-        <section>
-        <h1>Update profile</h1>
+      <div id="wrapper" className="profile-page">
+        <div id="principal">
+          <h1 id="heading">Update profile</h1>
 
-        <h2>Avatar</h2>
-        {user.avatarUrl && (
-            <img
-                src={`${API_URL}${user.avatarUrl}`}
-                alt="Current avatar"
-                style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', display: 'inline-block', marginBottom: 8 }}
-            />
-        )}
-        <form onSubmit={handleAvatarSubmit} noValidate>
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarFile(e.target.files?.[0] ?? null)}
-          />
-          {avatarError ? <p style={{ color: 'red' }}>{avatarError}</p> : null}
-          {avatarMessage ? <p style={{ color: 'green' }}>{avatarMessage}</p> : null}
-          <button type="submit" disabled={isAvatarSubmitting}>
-            {isAvatarSubmitting ? 'uploading...' : 'upload avatar'}
-          </button>
-        </form>
-        <form onSubmit={handleProfileSubmit} noValidate>
-          <div>
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              autoComplete="username"
-            />
-          </div>
+          <form className="form" onSubmit={handleAvatarSubmit} noValidate>
+            <div className="field">
+              <h2>Avatar</h2>
+              {user.avatarUrl ? (
+                <img
+                  className="profile-avatar profile-avatar-small"
+                  src={`${ASSET_URL}${user.avatarUrl}`}
+                  alt="Current avatar"
+                />
+              ) : (
+                <div className="profile-avatar-placeholder">
+                  {user.username[0].toUpperCase()}
+                </div>
+              )}
 
-          {profileError ? <p>{profileError}</p> : null}
-          {profileMessage ? <p>{profileMessage}</p> : null}
+              <label htmlFor="avatar-file" className="file-input-label">
+                Choose file
+                <input
+                  id="avatar-file"
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setAvatarFile(e.target.files?.[0] ?? null)}
+                />
+              </label>
+              {avatarFile ? <div className="file-name">{avatarFile.name}</div> : null}
+              {avatarError ? <div className="alert alert-danger text-error" role="alert">{avatarError}</div> : null}
+              {avatarMessage ? <div className="alert alert-success text-success" role="alert">{avatarMessage}</div> : null}
+              <button type="submit" className="btn btn-primary button" disabled={isAvatarSubmitting}>
+                {isAvatarSubmitting ? 'uploading...' : 'upload avatar'}
+              </button>
+            </div>
+          </form>
 
-          <button type="submit" disabled={isProfileSubmitting}>
-            {isProfileSubmitting ? 'updating...' : 'update'}
-          </button>
-        </form>
+          <form className="form" onSubmit={handleProfileSubmit} noValidate>
+            <div className="field">
+              <h2>Profile</h2>
+              <label htmlFor="username">Username</label>
+              <input
+                id="username"
+                type="text"
+                className="form-control"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                autoComplete="username"
+                placeholder="Username"
+              />
+              {profileError ? <div className="alert alert-danger text-error" role="alert">{profileError}</div> : null}
+              {profileMessage ? <div className="alert alert-success text-success" role="alert">{profileMessage}</div> : null}
+              <button type="submit" className="btn btn-primary button" disabled={isProfileSubmitting}>
+                {isProfileSubmitting ? 'updating...' : 'update'}
+              </button>
+            </div>
+          </form>
 
-        <h2>Change password</h2>
-        <form onSubmit={handlePasswordSubmit} noValidate>
-          <div>
-            <label htmlFor="currentPassword">Current password</label>
-            <input
-              id="currentPassword"
-              type="password"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              autoComplete="current-password"
-            />
-          </div>
+          <form className="form" onSubmit={handlePasswordSubmit} noValidate>
+            <div className="field">
+              <h2>Change password</h2>
+              <label htmlFor="currentPassword">Current password</label>
+              <input
+                id="currentPassword"
+                type="password"
+                className="form-control"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                autoComplete="current-password"
+                placeholder="Current password"
+              />
 
-          <div>
-            <label htmlFor="newPassword">New password</label>
-            <input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-              autoComplete="new-password"
-            />
-          </div>
+              <label htmlFor="newPassword">New password</label>
+              <input
+                id="newPassword"
+                type="password"
+                className="form-control"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                autoComplete="new-password"
+                placeholder="New password"
+              />
 
-          <div>
-            <label htmlFor="confirmNewPassword">Confirm new password</label>
-            <input
-              id="confirmNewPassword"
-              type="password"
-              value={confirmNewPassword}
-              onChange={(event) => setConfirmNewPassword(event.target.value)}
-              autoComplete="new-password"
-            />
-          </div>
+              <label htmlFor="confirmNewPassword">Confirm new password</label>
+              <input
+                id="confirmNewPassword"
+                type="password"
+                className="form-control"
+                value={confirmNewPassword}
+                onChange={(event) => setConfirmNewPassword(event.target.value)}
+                autoComplete="new-password"
+                placeholder="Confirm new password"
+              />
 
-          {passwordError ? <p>{passwordError}</p> : null}
-          {passwordMessage ? <p>{passwordMessage}</p> : null}
+              {passwordError ? <div className="alert alert-danger text-error" role="alert">{passwordError}</div> : null}
+              {passwordMessage ? <div className="alert alert-success text-success" role="alert">{passwordMessage}</div> : null}
+              <button type="submit" className="btn btn-primary button" disabled={isPasswordSubmitting}>
+                {isPasswordSubmitting ? 'updating...' : 'change password'}
+              </button>
+            </div>
+          </form>
 
-          <button type="submit" disabled={isPasswordSubmitting}>
-            {isPasswordSubmitting ? 'updating...' : 'change password'}
-          </button>
-        </form>
-        </section>
+          <form className="form" onSubmit={handleTwoFactorEnable} noValidate>
+            <div className="field">
+              <h2>Two-factor authentication</h2>
+
+              {user.twoFactorEnabled ? (
+                <>
+                  <div className="alert alert-success text-success" role="alert">
+                    2FA is enabled for your account.
+                  </div>
+                  <button
+                    type="button"
+                    className="btn item-button item-button--danger"
+                    onClick={() => void handleTwoFactorDisable()}
+                    disabled={isTwoFactorSubmitting}
+                  >
+                    {isTwoFactorSubmitting ? 'disabling...' : 'Disable 2FA'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-primary button"
+                    onClick={() => void handleTwoFactorSetup()}
+                    disabled={isTwoFactorSubmitting}
+                  >
+                    {twoFactorQrCode ? 'Generate new QR code' : 'Setup 2FA'}
+                  </button>
+
+                  {twoFactorQrCode ? (
+                    <>
+                      <img className="two-factor-qr" src={twoFactorQrCode} alt="2FA QR code" />
+                      <label htmlFor="twoFactorCode">Authenticator code</label>
+                      <input
+                        id="twoFactorCode"
+                        type="text"
+                        className="form-control"
+                        value={twoFactorCode}
+                        onChange={(event) => setTwoFactorCode(event.target.value)}
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder="Enter 6-digit code"
+                      />
+                      <button type="submit" className="btn btn-primary button" disabled={isTwoFactorSubmitting}>
+                        {isTwoFactorSubmitting ? 'confirming...' : 'Confirm 2FA'}
+                      </button>
+                    </>
+                  ) : null}
+                </>
+              )}
+
+              {twoFactorError ? <div className="alert alert-danger text-error" role="alert">{twoFactorError}</div> : null}
+              {twoFactorMessage ? <div className="alert alert-success text-success" role="alert">{twoFactorMessage}</div> : null}
+            </div>
+          </form>
+        </div>
+      </div>
     )
 }
 export default UpdateProfilePage

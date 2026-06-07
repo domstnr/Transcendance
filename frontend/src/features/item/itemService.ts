@@ -20,6 +20,15 @@ export async function getItem(itemId: string) {
   }
 }
 
+export async function getAllItems() {
+  try {
+    const response = await httpClient.get<GetMyItemsResponse>('/item')
+    return response.data
+  } catch (error) {
+    throw new Error(extractHttpErrorMessage(error) ?? 'Failed to load items.')
+  }
+}
+
 export async function getCurrentUserItems() {
   try {
     const response = await httpClient.get<GetMyItemsResponse>('/item/me')

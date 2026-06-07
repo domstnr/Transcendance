@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
+import httpClient from '../../shared/api/httpClient'
 import type { HealthResponse } from './types'
-
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function StatusPage() {
 	const [health, setHealth] = useState<HealthResponse | null>(null)
@@ -11,9 +10,8 @@ function StatusPage() {
 	async function fetchHealth() {
 		setLoading(true)
 		try {
-			const res = await fetch(`${API_URL}/health`)
-			const data = await res.json() as HealthResponse
-			setHealth(data)
+			const response = await httpClient.get<HealthResponse>('/health')
+			setHealth(response.data)
 		} catch {
 			setHealth({ status: 'error', info: {}, error: {} })
 		} finally {

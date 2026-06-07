@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getPendingRequests, acceptFriendRequest, declineFriendRequest } from './friendsService'
+import { acceptFriendRequest, declineFriendRequest, getPendingRequests } from './friendsService'
 import type { FriendRequest } from './types'
 
 function FriendRequestsPage() {
@@ -18,7 +18,7 @@ function FriendRequestsPage() {
     const handleAccept = async (senderId: string) => {
         try {
             await acceptFriendRequest(senderId)
-            setRequests(prev => prev.filter(r => r.from.id !== senderId))
+            setRequests(prev => prev.filter(request => request.from.id !== senderId))
         } catch {
             setError('Failed to accept request')
         }
@@ -27,7 +27,7 @@ function FriendRequestsPage() {
     const handleDecline = async (senderId: string) => {
         try {
             await declineFriendRequest(senderId)
-            setRequests(prev => prev.filter(r => r.from.id !== senderId))
+            setRequests(prev => prev.filter(request => request.from.id !== senderId))
         } catch {
             setError('Failed to decline request')
         }
@@ -36,30 +36,50 @@ function FriendRequestsPage() {
     if (loading) return <p>Loading requests...</p>
 
     return (
-        <section>
-            <h1>Friend Requests</h1>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <Link to="/friends">← Back to Friends</Link>
-            {requests.length === 0 ? (
-                <p>No pending friend requests.</p>
-            ) : (
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {requests.map(req => (
-                        <li key={req.requestId}>
-                            <strong>{req.from.username}</strong>
-                            {' wants to be your friend '}
-                            <button type="button" onClick={() => void handleAccept(req.from.id)}>
-                                Accept
-                            </button>
-                            {' '}
-                            <button type="button" onClick={() => void handleDecline(req.from.id)}>
-                                Decline
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </section>
+      <section className="friends-section">
+        <h1 className="friends-title">Friend Requests</h1>
+
+        <nav className="friends-nav">
+          <Link to="/friends" className="friends-link">Back to Friends</Link>
+          <span className="friends-sep">|</span>
+          <Link to="/friends/search" className="friends-link">Find Friends</Link>
+        </nav>
+
+        {error ? <p className="alert alert-danger error-message" role="alert">{error}</p> : null}
+
+        {requests.length === 0 ? (
+          <div className="empty-state">
+            <p>No pending friend requests.</p>
+          </div>
+        ) : (
+          <div className="friends-list">
+            <ul>
+              {requests.map(request => (
+                <li key={request.requestId} className="friend-item">
+                  <strong>{request.from.username}</strong>
+                  <small>sent you a friend request</small>
+                  <div className="friend-actions">
+                    <button
+                      type="button"
+                      className="btn item-button item-button--primary"
+                      onClick={() => void handleAccept(request.from.id)}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      type="button"
+                      className="btn item-button item-button--danger"
+                      onClick={() => void handleDecline(request.from.id)}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
     )
 }
 

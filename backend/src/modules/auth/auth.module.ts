@@ -5,6 +5,7 @@ import { JwtModule } from "@nestjs/jwt";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { WsJwtGuard } from "./guards/ws-jwt.guard";
 import { UserModule } from "../user/user.module";
+import { TwoFactorService } from './two-factor.service';
 
 
 @Module({
@@ -17,6 +18,7 @@ import { UserModule } from "../user/user.module";
     controllers: [AuthController],
     providers: [
         AuthService,
+        TwoFactorService,
         JwtStrategy,
         WsJwtGuard,
     ],

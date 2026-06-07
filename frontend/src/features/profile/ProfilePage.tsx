@@ -15,7 +15,7 @@ import type { ItemImage, ItemSummary } from '../item/types'
 
 type ItemModalMode = 'create' | 'edit' | null
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const ASSET_URL = ''
 const MAX_ITEM_IMAGES = 5
 const MAX_ITEM_IMAGE_SIZE = 10 * 1024 * 1024
 const ALLOWED_ITEM_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
@@ -58,6 +58,8 @@ function ProfilePage() {
             previews.forEach((preview) => URL.revokeObjectURL(preview))
         }
     }, [imageFiles])
+
+    const itemCount = items.length
 
     async function loadItems() {
         try {
@@ -266,43 +268,53 @@ function ProfilePage() {
     }
 
     return (
-        <section className="profile-page">
-        <div className="profile-header">
+      <section className="profile-page">
+        <div className="profile-page-header">
           <div>
-            <h1>Profile</h1>
-            {user.avatarUrl ? (
-              <img
-                src={`${API_URL}${user.avatarUrl}`}
-                alt="Avatar"
-                style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
-              />
-            ) : (
-              <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#ccc', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
-                {user.username[0].toUpperCase()}
+            <h1 id="heading">Profile</h1>
+            <div className="form">
+              <div className="profile-avatar-section">
+                {user.avatarUrl ? (
+                  <img
+                    className="avatar-img"
+                    src={`${ASSET_URL}${user.avatarUrl}`}
+                    alt={`${user.username} avatar`}
+                  />
+                ) : (
+                  <div className="profile-avatar-placeholder">
+                    {user.username[0].toUpperCase()}
+                  </div>
+                )}
               </div>
-            )}
-            <p>Username: {user.username}</p>
-            <p>User ID: {user.userId}</p>
-          </div>
-          <div className="profile-actions">
-            <button type="button" onClick={() => navigate('/profile/update')}>
-              Update profile
-            </button>
+              <p className="profile-text">
+                <span className="profile-label">Username:</span> {user.username}
+              </p>
+              <p className="profile-text">
+                <span className="profile-label">User ID:</span> {user.userId}
+              </p>
+              <button type="button" className="btn btn-primary button btn-update" onClick={() => navigate('/profile/update')}>
+                Update profile
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="profile-section-header">
           <h2>My items</h2>
-          <button type="button" onClick={openCreateModal}>
+          <button type="button" className="btn button-secondary" onClick={openCreateModal}>
             New
           </button>
         </div>
 
-        {isItemsLoading ? <p>Loading your items...</p> : null}
-        {itemsError ? <p>{itemsError}</p> : null}
+        {(isItemsLoading || itemsError) && (
+          <div className="items-status">
+            {isItemsLoading ? <p>Loading your items...</p> : null}
+            {itemsError ? <p className="alert alert-danger error-message" role="alert">{itemsError}</p> : null}
+          </div>
+        )}
 
-        {!isItemsLoading && !itemsError ? (
-          items.length > 0 ? (
+        {!isItemsLoading && !itemsError && (
+          itemCount > 0 ? (
             <div className="item-grid">
               {items.map((item) => (
                 <article key={item.id} className="item-card">
@@ -327,24 +339,30 @@ function ProfilePage() {
                     )}
                   </div>
                   <div className="item-card-actions">
-                    <button type="button" onClick={() => openEditModal(item)}>
+                    <button type="button" className="btn item-button item-button--primary" onClick={() => openEditModal(item)}>
                       Edit
                     </button>
                     <button
                       type="button"
+                      className="btn item-button item-button--danger"
                       onClick={() => void handleDeleteItem(item)}
                       disabled={deletingItemId === item.id}
                     >
                       {deletingItemId === item.id ? 'Deleting...' : 'Delete'}
                     </button>
+                    {item.auction ? (
+                      <Link to={`/auction/${item.auction.id}/chat`}>Enter chat room</Link>
+                    ) : null}
                   </div>
                 </article>
               ))}
             </div>
           ) : (
-            <p>You have not created any items yet.</p>
+            <div className="empty-state">
+              <p>You have not created any items yet.</p>
+            </div>
           )
-        ) : null}
+        )}
 
         {modalMode ? (
           <div className="modal-backdrop" role="presentation" onClick={closeModal}>
@@ -364,36 +382,43 @@ function ProfilePage() {
                   Title
                   <input
                     type="text"
+                    className="form-control"
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     maxLength={120}
+                    placeholder="Listing title"
                   />
                 </label>
 
                 <label>
                   Description
                   <textarea
+                    className="form-control"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     rows={5}
+                    placeholder="Describe your item"
                   />
                 </label>
 
                 <label>
-                  Condition
+                  Condition (1-10)
                   <input
                     type="number"
+                    className="form-control"
                     min="1"
                     max="10"
                     step="1"
                     value={condition}
                     onChange={(event) => setCondition(event.target.value)}
+                    placeholder="Condition out of 10"
                   />
                 </label>
 
                 <label>
                   Category
                   <select
+                    className="form-control"
                     value={category}
                     onChange={(event) => setCategory(event.target.value as ItemCategory)}
                   >
@@ -411,10 +436,12 @@ function ProfilePage() {
                       Start price
                       <input
                         type="number"
+                        className="form-control"
                         min="0.01"
                         step="0.01"
                         value={startPrice}
                         onChange={(event) => setStartPrice(event.target.value)}
+                        placeholder="Start price"
                       />
                     </label>
 
@@ -422,6 +449,7 @@ function ProfilePage() {
                       Auction end date
                       <input
                         type="datetime-local"
+                        className="form-control"
                         value={endDate}
                         onChange={(event) => setEndDate(event.target.value)}
                       />
@@ -433,6 +461,7 @@ function ProfilePage() {
                   Images
                   <input
                     type="file"
+                    className="form-control"
                     accept="image/jpeg,image/png,image/webp"
                     multiple
                     onChange={handleImageSelection}
@@ -449,7 +478,7 @@ function ProfilePage() {
                   <div className="item-image-previews">
                     {existingImages.map((image) => (
                       <figure key={image.id} className="item-image-preview">
-                        <img src={`${API_URL}${image.url}`} alt="Current item" />
+                        <img src={`${ASSET_URL}${image.url}`} alt="Current item" />
                         <figcaption>Current</figcaption>
                       </figure>
                     ))}
@@ -468,13 +497,17 @@ function ProfilePage() {
                   </div>
                 ) : null}
 
-                {modalError ? <p>{modalError}</p> : null}
+                {modalError ? <p className="alert alert-danger modal-error-message" role="alert">{modalError}</p> : null}
 
                 <div className="modal-actions">
-                  <button type="button" onClick={closeModal} disabled={isSavingItem}>
+                  <button type="button" className="btn item-button item-button--cancel" onClick={closeModal} disabled={isSavingItem}>
                     Cancel
                   </button>
-                  <button type="submit" disabled={isSavingItem || isLoadingItemImages}>
+                  <button
+                    type="submit"
+                    className="btn item-button item-button--primary"
+                    disabled={isSavingItem || isLoadingItemImages}
+                  >
                     {isSavingItem ? (modalMode === 'edit' ? 'Saving...' : 'Creating...') : (modalMode === 'edit' ? 'Save changes' : 'Create listing')}
                   </button>
                 </div>
@@ -482,7 +515,7 @@ function ProfilePage() {
             </div>
           </div>
         ) : null}
-        </section>
+      </section>
     )
 }
 export default ProfilePage

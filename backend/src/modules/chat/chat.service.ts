@@ -20,6 +20,13 @@ export class ChatService {
             if (!isSeller && !isWinner) {
                 throw new ForbiddenException('Bid expired, only winner can access');
             }
+        } else if (!isSeller) {
+            const hasBid = await this.prisma.bid.findFirst({
+                where: { auctionId, userId },
+            });
+            if (!hasBid) {
+                throw new ForbiddenException('You must place a bid to join the chat');
+            }
         }
 
         const participation = await this.prisma.chatParticipation.findUnique({
