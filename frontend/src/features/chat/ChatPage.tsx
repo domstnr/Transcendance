@@ -83,10 +83,6 @@ function ChatPage() {
                         {itemTitle ? `Room for "${itemTitle}"` : 'Room for this listing auction'}
                     </p>
                 </div>
-                <span className={isConnected ? 'chat-status chat-status--online' : 'chat-status'}>
-                    <span className={isConnected ? 'status online' : 'status offline'}>●</span>
-                    {isConnected ? 'Connected' : 'Connecting...'}
-                </span>
             </header>
 
             <div className="chat-messages" aria-live="polite">
