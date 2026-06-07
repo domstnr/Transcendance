@@ -108,7 +108,7 @@ export class AuthController {
         return { message: 'Logout successful' };
     }
 
-    @Post('auth/github/login')
+    @Post('github/login')
     @HttpCode(HttpStatus.OK)
     async handleGitHubCallback(
         @Body() codeDto: GitHubCodeDto,

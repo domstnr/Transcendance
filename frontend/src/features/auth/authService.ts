@@ -52,7 +52,8 @@ export async function changePassword(data: ChangePasswordRequest): Promise<Chang
 
 export async function handleGitHubCallback(data: GitHubCodeRequest): Promise<GitHubCodeResponse> {
     try {
-        const response = await httpClient.post<GitHubCodeResponse>('auth/github/login', data);
+        const baseUrl = window.location.origin;
+        const response = await httpClient.post<GitHubCodeResponse>(`${baseUrl}/auth/github/login`, data);
         return response.data;
     } catch (error) {
         throw new Error(extractHttpErrorMessage(error) ?? 'error: request failed');
