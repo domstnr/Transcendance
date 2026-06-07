@@ -2,7 +2,6 @@ import {
     Controller,
     Get, Delete, Patch,
     Logger,
-    UnauthorizedException,
     BadRequestException,
     Query,
     Req, Body,
@@ -18,6 +17,7 @@ import { diskStorage } from "multer";
 import { extname } from "path";
 import { randomUUID } from "crypto";
 import { JwtAuthGuard } from "../auth/strategies/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../auth/strategies/optional-jwt-auth.guard";
 import { ApiKeyGuard } from "../api_key/api-key.guard";
 import { UserService } from "./user.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -37,11 +37,14 @@ export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Get('me')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(OptionalJwtAuthGuard)
     async getCurrentUser(@Req() req: RequestWithUser) {
+        if (!req.user) {
+            return { user: null };
+        }
         const user = await this.userService.findById(req.user.userId);
         if (!user) {
-            throw new UnauthorizedException('Session invalid: user not found.');
+            return { user: null };
         }
         return {
             message: 'Welcome, success',
