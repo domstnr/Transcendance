@@ -1,68 +1,55 @@
 import { Controller, Post, Body, Logger, Get, Param, Req, UseGuards } from '@nestjs/common';
-import { EventBus } from '../../core/bus/event.service';
-import { EventType } from '../../core/bus/event.types';
-import { AuctionRepository } from './auction.repository';
-import { PrismaService } from '../../shared/prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { PlaceBidDto } from './dto/place-bid.dto';
+import { AuctionService } from './auction.service';
+import {
+    GetAuctionResponseDto,
+    GetBidHistoryResponseDto,
+    PlaceBidResponseDto,
+} from './dto/auction-response.dto';
 @Controller('auctions')
 export class AuctionController
 {
     private readonly logger = new Logger(AuctionController.name);
 
-    constructor(private readonly eventBus: EventBus,
-                private readonly auctionRepo: AuctionRepository,
-                private readonly prisma:    PrismaService,
-    ) {}
+    constructor(private readonly auctionService: AuctionService) {}
 
     @UseGuards(JwtAuthGuard)
     @Post(':id/bids')
     async placeBid(
         @Param('id') auctionId: string,
         @Body() payload: PlaceBidDto,
-        @Req() request: { user: { userId: string; username: string }},
-    )
+        @Req() request: { user: { userId: string }},
+    ): Promise<PlaceBidResponseDto>
     {
-        const safeUserId = request.user.userId;
-        const safeUsername = request.user.username;
         this.logger.log(`[HTTP] new BID request from ${auctionId} `);
-        const event = {
-            type: EventType.BID_PLACED,
-            timestamp: Date.now(),
-            payload: { auctionId, amount: payload.amount, userId: safeUserId, username: safeUsername },
-        };
-        
-        console.log(`User ${safeUserId} is bidding ${payload.amount} on ${auctionId}`);
-        await this.eventBus.publish(event);
-        return Promise.resolve({
-            status: 'succes',
-            message: `Your bid of ${payload.amount} is in treatment`
-        });
-    }
 
-    @Get(':id')
-    async getAuctionState(@Param('id') id: string) 
-    {
-        this.logger.log(`[HTTP] Consultation de l'état pour ${id}`);
-  
-        // On demande au repo de nous donner la dernière "photo"
-        const state = await this.auctionRepo.findById(id);
-  
-        return state;
-    }
-
-    @Get(':id/history')
-    async getAuctionHistory(@Param('id') auctionId: string)
-    {
-        const history = await this.prisma.bid.findMany({
-            where: { auctionId: auctionId},
-            orderBy: { createdAt: 'desc'},
+        const result = await this.auctionService.placeBid({
+            auctionId,
+            bidderId: request.user.userId,
+            amount: payload.amount,
         });
 
         return {
-            auctionId: auctionId,
-            totalBids: history.length,
-            history:   history,
+            status: 'success',
+            message: `Your bid of ${payload.amount} was accepted.`,
+            ...result,
         };
+    }
+
+    @Get(':id')
+    async getAuctionState(@Param('id') id: string): Promise<GetAuctionResponseDto>
+    {
+        this.logger.log(`[HTTP] Consultation de l'état pour ${id}`);
+
+        return this.auctionService.findById(id);
+    }
+
+    @Get(':id/history')
+    async getAuctionHistory(
+        @Param('id') auctionId: string,
+    ): Promise<GetBidHistoryResponseDto>
+    {
+        return this.auctionService.getBidHistory(auctionId);
     }
 }

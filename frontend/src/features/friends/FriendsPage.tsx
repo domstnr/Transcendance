@@ -60,9 +60,11 @@ function FriendsPage() {
             <ul>
               {friends.map((friend) => (
                 <li key={friend.id} className="friend-item">
-                  <Avatar username={friend.username} avatarUrl={friend.avatarUrl} />
-                  <span className={friend.isOnline ? 'status online' : 'status offline'}>●</span>
-                  <strong>{friend.username}</strong>
+                  <Link to={`/user/${friend.id}`} style={{ display: 'contents' }}>
+                    <Avatar username={friend.username} avatarUrl={friend.avatarUrl} />
+                    <span className={friend.isOnline ? 'status online' : 'status offline'}>●</span>
+                    <strong>{friend.username}</strong>
+                  </Link>
                   {!friend.isOnline && friend.lastSeen ? (
                     <small>last seen {new Date(friend.lastSeen).toLocaleString()}</small>
                   ) : null}

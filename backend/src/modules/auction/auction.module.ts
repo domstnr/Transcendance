@@ -1,11 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AuctionController } from './auction.controller';
-import { PlaceBidHandler } from './handlers/place-bid.handler';
-import { AuctionRepository } from './auction.repository';
 import { EventModule } from '../../core/bus/event.module';
 import { AuctionScheduler } from './handlers/auction.scheduler';
 import { AuctionGateway } from './auction.gateway';
-import { BidHistoryHandler } from './handlers/bid-history.handler';
 import { AuthnModule } from '../auth/auth.module';
 import { AuctionService } from './auction.service';
 
@@ -20,10 +17,7 @@ import { AuctionService } from './auction.service';
   providers: [
     AuctionService,
     AuctionGateway,
-    BidHistoryHandler,
     AuctionScheduler,
-    PlaceBidHandler,
-    AuctionRepository
   ],
   exports: [AuctionService],
 })
