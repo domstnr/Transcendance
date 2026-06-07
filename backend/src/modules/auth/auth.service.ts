@@ -14,6 +14,7 @@ import { UserService } from "../user/user.service";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
+import { TwoFactorService } from './two-factor.service';
 
 
 @Injectable()
@@ -24,6 +25,7 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly eventBus: EventBus,
         private readonly jwtService: JwtService,
+        private readonly twoFactorService: TwoFactorService,
     ){}
 
     async register(dto: RegisterDto) {
@@ -57,13 +59,32 @@ export class AuthService {
 
         this.logger.log(`Connection success via HTTPS for: ${user.username}`);
 
+        if (user.twoFactorEnabled) {
+            const tempToken = await this.jwtService.signAsync(
+                {
+                    sub: user.id,
+                    username: user.username,
+                    tokenType: '2fa',
+                },
+                { expiresIn: '5m' },
+            );
+
+            return {
+                status: '2fa_required',
+                message: 'Two-factor authentication required.',
+                tempToken,
+            };
+        }
+
         const tokens = await this.generateTokens(user.id, user.username);
         return {
             status: 'success',
             message: 'Login success.',
             user: {
                 userId: user.id,
-                username: user.username
+                username: user.username,
+                avatarUrl: user.avatarUrl ?? null,
+                twoFactorEnabled: user.twoFactorEnabled,
             },
             tokens: {
                 accessToken: tokens.accessToken,
@@ -128,6 +149,71 @@ export class AuthService {
         await this.userService.updatePassword(userId, hashedPassword);
 
         return { message: 'Password updated successfully.' };
+    }
+
+    async setupTwoFactor(userId: string) {
+        const user = await this.userService.findById(userId);
+
+        if (!user) {
+            throw new NotFoundException('User not found.');
+        }
+
+        return this.twoFactorService.generateSetup(user.id, user.email);
+    }
+
+    async enableTwoFactor(userId: string, code: string) {
+        const user = await this.userService.findByIdWithTwoFactor(userId);
+
+        if (!user?.twoFactorSecret) {
+            throw new BadRequestException('2FA setup not initialized.');
+        }
+
+        return this.twoFactorService.enable(userId, user.twoFactorSecret, code);
+    }
+
+    async disableTwoFactor(userId: string) {
+        await this.userService.disableTwoFactor(userId);
+        return { message: '2FA disabled successfully.' };
+    }
+
+    async verifyTwoFactorLogin(tempToken: string, code: string) {
+        let payload: JwtPayload;
+
+        try {
+            payload = await this.jwtService.verifyAsync<JwtPayload>(tempToken);
+        } catch {
+            throw new UnauthorizedException('Invalid or expired 2FA session.');
+        }
+
+        if (payload.tokenType !== '2fa') {
+            throw new UnauthorizedException('Invalid 2FA session.');
+        }
+
+        const user = await this.userService.findByIdWithTwoFactor(payload.sub);
+
+        if (!user?.twoFactorSecret || !user.twoFactorEnabled) {
+            throw new UnauthorizedException('2FA is not enabled.');
+        }
+
+        const isValid = this.twoFactorService.verifyCode(user.twoFactorSecret, code);
+
+        if (!isValid) {
+            throw new BadRequestException('Invalid 2FA code.');
+        }
+
+        const tokens = await this.generateTokens(user.id, user.username);
+
+        return {
+            status: 'success',
+            message: 'Login success.',
+            user: {
+                userId: user.id,
+                username: user.username,
+                avatarUrl: user.avatarUrl ?? null,
+                twoFactorEnabled: user.twoFactorEnabled,
+            },
+            tokens,
+        };
     }
 
     

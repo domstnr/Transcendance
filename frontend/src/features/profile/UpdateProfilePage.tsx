@@ -1,11 +1,11 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { updateCurrentUser, uploadAvatar } from './profileService.ts'
+import { disableTwoFactor, enableTwoFactor, setupTwoFactor, updateCurrentUser, uploadAvatar } from './profileService.ts'
 import type { UpdateProfileRequest } from './types'
 import { changePassword } from '../auth/authService'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 function UpdateProfilePage() {
     const { user, refreshUser } = useAuth()
@@ -24,6 +24,11 @@ function UpdateProfilePage() {
     const [avatarError, setAvatarError] = useState<string | null>(null)
     const [avatarMessage, setAvatarMessage] = useState<string | null>(null)
     const [isAvatarSubmitting, setIsAvatarSubmitting] = useState(false)
+    const [twoFactorQrCode, setTwoFactorQrCode] = useState<string | null>(null)
+    const [twoFactorCode, setTwoFactorCode] = useState('')
+    const [twoFactorError, setTwoFactorError] = useState<string | null>(null)
+    const [twoFactorMessage, setTwoFactorMessage] = useState<string | null>(null)
+    const [isTwoFactorSubmitting, setIsTwoFactorSubmitting] = useState(false)
 
     if (!user) {
         return <p>Loading profile...</p>
@@ -108,6 +113,72 @@ function UpdateProfilePage() {
             setPasswordError(error instanceof Error ? error.message : 'Password update failed.')
         } finally {
             setIsPasswordSubmitting(false)
+        }
+    }
+
+    async function handleTwoFactorSetup() {
+        setTwoFactorError(null)
+        setTwoFactorMessage(null)
+
+        try {
+            setIsTwoFactorSubmitting(true)
+            const response = await setupTwoFactor()
+            setTwoFactorQrCode(response.qrCodeDataUrl)
+            setTwoFactorMessage('Scan the QR code, then enter the 6-digit code.')
+        } catch (error) {
+            setTwoFactorError(error instanceof Error ? error.message : '2FA setup failed.')
+        } finally {
+            setIsTwoFactorSubmitting(false)
+        }
+    }
+
+    async function handleTwoFactorEnable(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+        setTwoFactorError(null)
+        setTwoFactorMessage(null)
+
+        const trimmedCode = twoFactorCode.trim()
+
+        if (!/^\d{6}$/.test(trimmedCode)) {
+            setTwoFactorError('Enter the 6-digit code from your authenticator app.')
+            return
+        }
+
+        try {
+            setIsTwoFactorSubmitting(true)
+            const response = await enableTwoFactor(trimmedCode)
+            setTwoFactorMessage(response.message)
+            setTwoFactorQrCode(null)
+            setTwoFactorCode('')
+            await refreshUser()
+        } catch (error) {
+            setTwoFactorError(error instanceof Error ? error.message : '2FA activation failed.')
+        } finally {
+            setIsTwoFactorSubmitting(false)
+        }
+    }
+
+    async function handleTwoFactorDisable() {
+        const shouldDisable = window.confirm('Disable 2FA for your account?')
+
+        if (!shouldDisable) {
+            return
+        }
+
+        setTwoFactorError(null)
+        setTwoFactorMessage(null)
+
+        try {
+            setIsTwoFactorSubmitting(true)
+            const response = await disableTwoFactor()
+            setTwoFactorQrCode(null)
+            setTwoFactorCode('')
+            setTwoFactorMessage(response.message)
+            await refreshUser()
+        } catch (error) {
+            setTwoFactorError(error instanceof Error ? error.message : '2FA disable failed.')
+        } finally {
+            setIsTwoFactorSubmitting(false)
         }
     }
 
@@ -211,6 +282,62 @@ function UpdateProfilePage() {
               <button type="submit" className="btn btn-primary button" disabled={isPasswordSubmitting}>
                 {isPasswordSubmitting ? 'updating...' : 'change password'}
               </button>
+            </div>
+          </form>
+
+          <form className="form" onSubmit={handleTwoFactorEnable} noValidate>
+            <div className="field">
+              <h2>Two-factor authentication</h2>
+
+              {user.twoFactorEnabled ? (
+                <>
+                  <div className="alert alert-success text-success" role="alert">
+                    2FA is enabled for your account.
+                  </div>
+                  <button
+                    type="button"
+                    className="btn item-button item-button--danger"
+                    onClick={() => void handleTwoFactorDisable()}
+                    disabled={isTwoFactorSubmitting}
+                  >
+                    {isTwoFactorSubmitting ? 'disabling...' : 'Disable 2FA'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-primary button"
+                    onClick={() => void handleTwoFactorSetup()}
+                    disabled={isTwoFactorSubmitting}
+                  >
+                    {twoFactorQrCode ? 'Generate new QR code' : 'Setup 2FA'}
+                  </button>
+
+                  {twoFactorQrCode ? (
+                    <>
+                      <img className="two-factor-qr" src={twoFactorQrCode} alt="2FA QR code" />
+                      <label htmlFor="twoFactorCode">Authenticator code</label>
+                      <input
+                        id="twoFactorCode"
+                        type="text"
+                        className="form-control"
+                        value={twoFactorCode}
+                        onChange={(event) => setTwoFactorCode(event.target.value)}
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder="Enter 6-digit code"
+                      />
+                      <button type="submit" className="btn btn-primary button" disabled={isTwoFactorSubmitting}>
+                        {isTwoFactorSubmitting ? 'confirming...' : 'Confirm 2FA'}
+                      </button>
+                    </>
+                  ) : null}
+                </>
+              )}
+
+              {twoFactorError ? <div className="alert alert-danger text-error" role="alert">{twoFactorError}</div> : null}
+              {twoFactorMessage ? <div className="alert alert-success text-success" role="alert">{twoFactorMessage}</div> : null}
             </div>
           </form>
         </div>

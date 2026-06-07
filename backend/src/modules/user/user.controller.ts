@@ -48,6 +48,7 @@ export class UserController {
                 userId: user.id,
                 username: user.username,
                 avatarUrl: user.avatarUrl ?? null,
+                twoFactorEnabled: user.twoFactorEnabled,
             },
         };
     }

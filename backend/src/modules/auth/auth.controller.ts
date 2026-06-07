@@ -47,6 +47,30 @@ export class AuthController {
         return response;
     }
 
+    @Post('2fa/setup')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    async setupTwoFactor(@Req() req: RequestWithUser) {
+        return this.authService.setupTwoFactor(req.user.userId);
+    }
+
+    @Post('2fa/enable')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    async enableTwoFactor(
+        @Req() req: RequestWithUser,
+        @Body() body: { code: string },
+    ) {
+        return this.authService.enableTwoFactor(req.user.userId, body.code);
+    }
+
+    @Post('2fa/disable')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    async disableTwoFactor(@Req() req: RequestWithUser) {
+        return this.authService.disableTwoFactor(req.user.userId);
+    }
+
     @Post('login')
     @HttpCode(HttpStatus.OK)
     async login(
@@ -56,6 +80,19 @@ export class AuthController {
         console.log(`Trying to connect... ${loginDto.email}`);
 
         const response = await this.authService.login(loginDto);
+        if (response.status === 'success') {
+            setAuthCookies(res, response.tokens.accessToken, response.tokens.refreshToken);
+        }
+        return response;
+    }
+
+    @Post('2fa/verify-login')
+    @HttpCode(HttpStatus.OK)
+    async verifyTwoFactorLogin(
+        @Body() body: { tempToken: string; code: string },
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const response = await this.authService.verifyTwoFactorLogin(body.tempToken, body.code);
         setAuthCookies(res, response.tokens.accessToken, response.tokens.refreshToken);
         return response;
     }

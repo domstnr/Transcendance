@@ -1,16 +1,16 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { searchUsers, sendFriendRequest } from './friendsService'
 import type { UserSearchResult } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 function Avatar({ username, avatarUrl }: { username: string; avatarUrl: string | null }) {
     return (
-        <span style={{ display: 'inline-flex', width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: '#ccc', alignItems: 'center', justifyContent: 'center', fontSize: 14, verticalAlign: 'middle' }}>
+        <span className="friend-avatar">
             {avatarUrl
-                ? <img src={`${API_URL}${avatarUrl}`} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                ? <img src={`${API_URL}${avatarUrl}`} alt={username} />
                 : username[0].toUpperCase()
             }
         </span>
@@ -24,13 +24,21 @@ function UserSearchPage() {
     const [error, setError] = useState('')
     const [searching, setSearching] = useState(false)
 
-    const handleSearch = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (query.trim().length < 2) return
+    const handleSearch = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+
+        const trimmedQuery = query.trim()
+
+        if (trimmedQuery.length < 2) {
+            setError('Enter at least 2 characters.')
+            return
+        }
+
         setSearching(true)
         setError('')
+
         try {
-            const data = await searchUsers(query.trim())
+            const data = await searchUsers(trimmedQuery)
             setResults(data)
         } catch {
             setError('Search failed')
@@ -56,44 +64,56 @@ function UserSearchPage() {
     }
 
     return (
-        <section>
-            <h1>Find Friends</h1>
-            <Link to="/friends">← Back to Friends</Link>
-            <form onSubmit={e => void handleSearch(e)}>
-                <input
-                    type="text"
-                    placeholder="Search by username..."
-                    value={query}
-                    onChange={e => setQuery(e.target.value)}
-                    minLength={2}
-                />
-                <button type="submit" disabled={searching}>
-                    {searching ? 'Searching...' : 'Search'}
-                </button>
-            </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {results.length > 0 && (
-                <div style={{ display: 'inline-block', textAlign: 'left' }}>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {results.map(user => (
-                        <li key={user.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <Avatar username={user.username} avatarUrl={user.avatarUrl} />
-                            <span style={{ color: user.isOnline ? 'green' : 'gray' }}>●</span>
-                            <strong>{user.username}</strong>
-                            {' '}
-                            {sent.has(user.id) ? (
-                                <span>Request sent ✓</span>
-                            ) : (
-                                <button type="button" onClick={() => void handleAdd(user.id)}>
-                                    Add Friend
-                                </button>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-                </div>
-            )}
-        </section>
+      <section className="friends-section">
+        <h1 className="friends-title">Find Friends</h1>
+
+        <nav className="friends-nav">
+          <Link to="/friends" className="friends-link">Back to Friends</Link>
+          <span className="friends-sep">|</span>
+          <Link to="/friends/requests" className="friends-link">Pending Requests</Link>
+        </nav>
+
+        <form className="friend-search-form" onSubmit={handleSearch} noValidate>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search by username"
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+            minLength={2}
+          />
+          <button type="submit" className="btn item-button item-button--primary" disabled={searching}>
+            {searching ? 'Searching...' : 'Search'}
+          </button>
+        </form>
+
+        {error ? <p className="alert alert-danger error-message" role="alert">{error}</p> : null}
+
+        {results.length > 0 ? (
+          <div className="friends-list">
+            <ul>
+              {results.map(user => (
+                <li key={user.id} className="friend-item">
+                  <Avatar username={user.username} avatarUrl={user.avatarUrl} />
+                  <span className={user.isOnline ? 'status online' : 'status offline'}>●</span>
+                  <strong>{user.username}</strong>
+                  {sent.has(user.id) ? (
+                    <small>Request sent</small>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="btn item-button item-button--primary"
+                    onClick={() => void handleAdd(user.id)}
+                    disabled={sent.has(user.id)}
+                  >
+                    {sent.has(user.id) ? 'Sent' : 'Add Friend'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </section>
     )
 }
 

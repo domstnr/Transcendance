@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { getMessages } from './chatService'
 import { useChat } from './useChat'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 function Avatar({ username, avatarUrl }: { username: string; avatarUrl: string | null }) {
     return (

@@ -42,6 +42,8 @@ model User {
   sentRequests     Friendship[]        @relation("SentRequests")
   receivedRequests Friendship[]        @relation("ReceivedRequests")
   apiKeys          ApiKey[]
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
 }
 
 model Item {

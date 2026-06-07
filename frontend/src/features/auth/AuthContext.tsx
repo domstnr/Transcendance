@@ -11,7 +11,7 @@ import { io, type Socket } from 'socket.io-client'
 import httpClient from '../../shared/api/httpClient'
 import type { AuthUser } from './types'
 
-const SOCKET_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const SOCKET_URL = import.meta.env.VITE_API_URL ?? ''
 
 type AuthContextValue = {
     user: AuthUser | null

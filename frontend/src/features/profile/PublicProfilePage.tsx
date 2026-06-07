@@ -7,7 +7,7 @@ import { placeBid } from '../auction/auctionService'
 import type { ItemSummary } from '../item/types'
 import type { PublicUser } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>()
