@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { getAuction } from '../auction/auctionService'
+import { getItem } from '../item/itemService'
 import { getMessages } from './chatService'
 import { useChat } from './useChat'
 
@@ -25,6 +26,7 @@ function ChatPage() {
     const [isLoadingHistory, setIsLoadingHistory] = useState(true)
     const [accessError, setAccessError] = useState<string | null>(null)
     const [sellerId, setSellerId] = useState<string | null>(null)
+    const [itemTitle, setItemTitle] = useState<string | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
 
     const { messages, setMessages, isConnected, error, sendMessage } = useChat(auctionId!)
@@ -37,6 +39,10 @@ function ChatPage() {
                     getMessages(auctionId!),
                 ])
                 setSellerId(auction?.sellerId ?? null)
+                if (auction?.itemId) {
+                    const itemData = await getItem(auction.itemId)
+                    setItemTitle(itemData.item.title)
+                }
                 setMessages(data.message.reverse())
             } catch (err) {
                 setAccessError(err instanceof Error ? err.message : 'Access denied')
@@ -73,7 +79,9 @@ function ChatPage() {
             <header className="chat-header">
                 <div>
                     <h1 className="chat-title">Auction Chat</h1>
-                    <p className="chat-subtitle">Room for this listing auction</p>
+                    <p className="chat-subtitle">
+                        {itemTitle ? `Room for "${itemTitle}"` : 'Room for this listing auction'}
+                    </p>
                 </div>
                 <span className={isConnected ? 'chat-status chat-status--online' : 'chat-status'}>
                     <span className={isConnected ? 'status online' : 'status offline'}>●</span>

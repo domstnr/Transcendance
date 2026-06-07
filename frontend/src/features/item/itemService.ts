@@ -4,6 +4,7 @@ import type {
   CreateItemResponse,
   DeleteItemResponse,
   GetMyItemsResponse,
+  ItemSummary,
   UpdateItemRequest,
   UpdateItemResponse,
 } from './types'
@@ -32,6 +33,15 @@ export async function getOtherUserItems(userId: string) {
     return response.data
   } catch (error) {
     throw new Error(extractHttpErrorMessage(error) ?? 'Failed to load items.')
+  }
+}
+
+export async function getItem(itemId: string) {
+  try {
+    const response = await httpClient.get<{ item: ItemSummary }>(`/item/${itemId}`)
+    return response.data
+  } catch (error) {
+    throw new Error(extractHttpErrorMessage(error) ?? 'Failed to load item.')
   }
 }
 
