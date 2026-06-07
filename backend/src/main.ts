@@ -10,6 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+  app.setGlobalPrefix('api');
 
   const allowedOrigins = (
     process.env.FRONTEND_ORIGIN ??
