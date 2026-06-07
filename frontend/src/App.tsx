@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './features/auth/ProtectedRoute'
 import Header from './shared/components/Header'
+import Footer from './shared/components/Footer'
 import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
 import ProfilePage from './features/profile/ProfilePage'
@@ -12,6 +13,7 @@ import UserSearchPage from './features/friends/UserSearchPage'
 import PublicProfilePage from './features/profile/PublicProfilePage'
 import StatusPage from './features/health/StatusPage'
 import CallbackPage from './features/auth/GithubCallback.tsx'
+import ItemDetailsPage from './features/item/ItemDetailsPage'
 import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage'
 import TermsOfServicePage from './features/legal/TermsOfServicePage'
 import './App.css'
@@ -25,10 +27,10 @@ function App() {
         path="/" 
         element={
           <ProtectedRoute>
-            <div>
+            <section className="home-section">
               <h1>Transcendance</h1>
               <p>Marketplace platform coming soon.</p>
-            </div>
+            </section>
           </ProtectedRoute>
         }
       />
@@ -78,11 +80,20 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/item/:itemId"
+        element={
+          <ProtectedRoute>
+            <ItemDetailsPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/status" element={<StatusPage />} />
       <Route path="/auth/callback" element={<CallbackPage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
       </Routes>
+      <Footer />
     </>
   )
 }

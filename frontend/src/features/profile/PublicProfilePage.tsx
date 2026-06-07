@@ -1,255 +1,182 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import httpClient from '../../shared/api/httpClient'
 import { useAuth } from '../auth/AuthContext'
-import { ITEM_CATEGORY_LABELS } from '../item/categoryOptions'
-import { getOtherUserItems } from '../item/itemService'
-import { placeBid } from '../auction/auctionService'
 import { getFriends, sendFriendRequest } from '../friends/friendsService'
+import { ITEM_CATEGORY_LABELS } from '../item/categoryOptions'
+import ItemThumbnail from '../item/ItemThumbnail'
+import { getOtherUserItems } from '../item/itemService'
 import type { ItemSummary } from '../item/types'
 import type { PublicUser } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL || '/api'
 const ASSET_URL = ''
 
 function PublicProfilePage() {
-	const { userId } = useParams<{ userId: string }>()
-	const { user: currentUser } = useAuth()
-	const [profile, setProfile] = useState<PublicUser | null>(null)
-	const [profileError, setProfileError] = useState<string | null>(null)
-	const [items, setItems] = useState<ItemSummary[]>([])
-	const [itemsError, setItemsError] = useState<string | null>(null)
-	const [isLoading, setIsLoading] = useState(true)
-	const [bidModalItem, setBidModalItem] = useState<ItemSummary | null>(null)
-	const [bidAmount, setBidAmount] = useState('')
-	const [bidError, setBidError] = useState<string | null>(null)
-	const [isPlacingBid, setIsPlacingBid] = useState(false)
-	const [bidSuccess, setBidSuccess] = useState<string | null>(null)
-	const [isFriend, setIsFriend] = useState(false)
-	const [requestSent, setRequestSent] = useState(false)
-	const [isSendingRequest, setIsSendingRequest] = useState(false)
-	const [friendError, setFriendError] = useState<string | null>(null)
+  const { userId } = useParams<{ userId: string }>()
+  const { user: currentUser } = useAuth()
+  const [profile, setProfile] = useState<PublicUser | null>(null)
+  const [profileError, setProfileError] = useState<string | null>(null)
+  const [items, setItems] = useState<ItemSummary[]>([])
+  const [itemsError, setItemsError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isFriend, setIsFriend] = useState(false)
+  const [requestSent, setRequestSent] = useState(false)
+  const [isSendingRequest, setIsSendingRequest] = useState(false)
+  const [friendError, setFriendError] = useState<string | null>(null)
 
-	useEffect(() => {
-		if (!userId) return
+  useEffect(() => {
+    if (!userId) return
 
-		async function load() {
-			try {
-				const [userRes, itemsRes, friends] = await Promise.all([
-					fetch(`${API_URL}/user/${userId}`, { credentials: 'include' }),
-					getOtherUserItems(userId!),
-					getFriends(),
-				])
+    const profileUserId = userId
+    let isCurrent = true
 
-				if (!userRes.ok) {
-					setProfileError('User not found.')
-				} else {
-					const data = await userRes.json() as PublicUser
-					setProfile(data)
-				}
+    async function load() {
+      try {
+        setIsLoading(true)
+        setProfileError(null)
+        setItemsError(null)
 
-				setItems(itemsRes.items)
-				setIsFriend(friends.some((f) => f.id === userId))
-			} catch {
-				setItemsError('Failed to load profile.')
-			} finally {
-				setIsLoading(false)
-			}
-		}
-		void load()
-	}, [userId])
+        const [userResponse, itemsResponse, friends] = await Promise.all([
+          httpClient.get<PublicUser>(`/user/${profileUserId}`),
+          getOtherUserItems(profileUserId),
+          getFriends(),
+        ])
 
-	async function handleSendFriendRequest() {
-		setIsSendingRequest(true)
-		setFriendError(null)
-		try {
-			await sendFriendRequest(userId!)
-			setRequestSent(true)
-		} catch (err) {
-			setFriendError(err instanceof Error ? err.message : 'Failed to send request.')
-		} finally {
-			setIsSendingRequest(false)
-		}
-	}
+        if (!isCurrent) return
 
-	async function handlePlaceBid() {
-		if (!bidModalItem?.auction) return
-		setBidError(null)
-		setBidSuccess(null)
+        setProfile(userResponse.data)
+        setItems(itemsResponse.items)
+        setIsFriend(friends.some((friend) => friend.id === profileUserId))
+      } catch (error) {
+        if (!isCurrent) return
 
-		const amount = Number(bidAmount)
-		if (!Number.isFinite(amount) || amount <= 0) {
-			setBidError('Enter a valid amount greater than 0.')
-			return
-		}
-		
-		if (amount <= bidModalItem.auction.currentPrice) {
-			setBidError(`Your bid must be higher than the current price (${bidModalItem.auction.currentPrice}).`)
-			return
-		}
+        const message = error instanceof Error ? error.message : 'Failed to load profile.'
+        setProfileError(message)
+        setItemsError(message)
+      } finally {
+        if (isCurrent) {
+          setIsLoading(false)
+        }
+      }
+    }
 
-		try {
-			setIsPlacingBid(true)
-			await placeBid(bidModalItem.auction.id, amount)
-			setBidSuccess('Bid placed successfully !')
-			setBidAmount('')
-		} catch (error) {
-			setBidError(error instanceof Error ? error.message : 'Failed to place bid.')
-		} finally {
-			setIsPlacingBid(false)
-		}
-	}
+    void load()
 
-	function openBidModal(item: ItemSummary) {
-		setBidModalItem(item)
-		setBidAmount('')
-		setBidError(null)
-		setBidSuccess(null)
-	}
+    return () => {
+      isCurrent = false
+    }
+  }, [userId])
 
-	function closeBidModal() {
-		if (isPlacingBid) return
-		setBidModalItem(null)
-		setBidError(null)
-		setBidSuccess(null)
-	}
+  async function handleSendFriendRequest() {
+    if (!userId) return
 
-	if (isLoading) return <p>Loading profile...</p>
-	if (profileError) return <p>{profileError}</p>
-	if (!profile) return null
+    setIsSendingRequest(true)
+    setFriendError(null)
 
-	const isOwnProfile = currentUser?.userId === profile.userId
+    try {
+      await sendFriendRequest(userId)
+      setRequestSent(true)
+    } catch (error) {
+      setFriendError(error instanceof Error ? error.message : 'Failed to send request.')
+    } finally {
+      setIsSendingRequest(false)
+    }
+  }
 
-	return (
-		<section className="profile-page">
-		<div className="profile-header">
-			<div>
-			<h1>{profile.username}'s profile</h1>
-			{profile.avatarUrl ? (
-				<img
-				src={`${ASSET_URL}${profile.avatarUrl}`}
-				alt="Avatar"
-				style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
-				/>
-			) : (
-				<div style={{ width: 96, height: 96, borderRadius: '50%', background: '#ccc', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
-				{profile.username[0].toUpperCase()}
-				</div>
-			)}
-			<p>
-				<span style={{ color: profile.isOnline ? 'green' : 'gray' }}>●</span>
-				{' '}{profile.isOnline ? 'Online' : 'Offline'}
-			</p>
-			{!isOwnProfile && (
-				isFriend ? (
-					<p>Already friends</p>
-				) : requestSent ? (
-					<p>Friend request sent</p>
-				) : (
-					<button type="button" onClick={() => void handleSendFriendRequest()} disabled={isSendingRequest}>
-						{isSendingRequest ? 'Sending...' : 'Send friend request'}
-					</button>
-				)
-			)}
-			{friendError ? <p style={{ color: 'red' }}>{friendError}</p> : null}
-			</div>
-		</div>
+  if (isLoading) return <p>Loading profile...</p>
+  if (profileError) return <p>{profileError}</p>
+  if (!profile) return null
 
-		<div className="profile-section-header">
-			<h2>{profile.username}'s listings</h2>
-		</div>
+  const isOwnProfile = currentUser?.userId === profile.userId
 
-		{itemsError ? <p>{itemsError}</p> : null}
+  return (
+    <section className="profile-page">
+      <div className="profile-header">
+        <div>
+          <h1>{profile.username}'s profile</h1>
+          {profile.avatarUrl ? (
+            <img
+              src={`${ASSET_URL}${profile.avatarUrl}`}
+              alt="Avatar"
+              style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
+            />
+          ) : (
+            <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#ccc', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>
+              {profile.username[0].toUpperCase()}
+            </div>
+          )}
+          <p>
+            <span style={{ color: profile.isOnline ? 'green' : 'gray' }}>●</span>
+            {' '}{profile.isOnline ? 'Online' : 'Offline'}
+          </p>
+          {!isOwnProfile && (
+            isFriend ? (
+              <p>Already friends</p>
+            ) : requestSent ? (
+              <p>Friend request sent</p>
+            ) : (
+              <button
+                type="button"
+                className="btn item-button item-button--primary"
+                onClick={() => void handleSendFriendRequest()}
+                disabled={isSendingRequest}
+              >
+                {isSendingRequest ? 'Sending...' : 'Send friend request'}
+              </button>
+            )
+          )}
+          {friendError ? <p className="alert alert-danger error-message" role="alert">{friendError}</p> : null}
+        </div>
+      </div>
 
-		{!itemsError ? (
-			items.length > 0 ? (
-			<div className="item-grid">
-				{items.map((item) => (
-				<article key={item.id} className="item-card">
-					<div className="item-card-body">
-					<h3>{item.title}</h3>
-					<p>{item.description}</p>
-					</div>
-					<div className="item-card-meta">
-					<span>Category: {ITEM_CATEGORY_LABELS[item.category]}</span>
-					<span>Condition: {item.condition}/10</span>
-					{item.auction ? (
-						<>
-						<span>Start price: ${item.auction.startPrice}</span>
-						<span>Current price: ${item.auction.currentPrice}</span>
-						<span>Status: {item.auction.status}</span>
-						<span>Ends: {new Date(item.auction.endDate).toLocaleString()}</span>
-						</>
-					) : (
-						<span>No auction</span>
-					)}
-					</div>
-					{item.auction ? (
-					<div className="item-card-actions">
-						{!isOwnProfile && item.auction.status === 'OPEN' ? (
-						<button type="button" className="btn item-button item-button--primary" onClick={() => openBidModal(item)}>
-							Place Bid
-						</button>
-						) : null}
-						<Link className="btn button-secondary" to={`/auction/${item.auction.id}/chat`}>
-							Enter chat room
-						</Link>
-					</div>
-					) : null}
-				</article>
-				))}
-			</div>
-			) : (
-			<p>{profile.username} has no listings yet.</p>
-			)
-		) : null}
+      <div className="profile-section-header">
+        <h2>{profile.username}'s listings</h2>
+      </div>
 
-		{bidModalItem ? (
-			<div className="modal-backdrop" role="presentation" onClick={closeBidModal}>
-			<div
-				className="modal-panel"
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby="bid-modal-title"
-				onClick={(e) => e.stopPropagation()}
-			>
-				<div className="modal-header">
-				<h2 id="bid-modal-title">Place a bid on "{bidModalItem.title}"</h2>
-				<button
-					type="button"
-					onClick={closeBidModal}
-					disabled={isPlacingBid}
-					style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}
-					aria-label="Close"
-				>
-					×
-				</button>
-				</div>
-				<div className="modal-form">
-				<p>Current price: ${bidModalItem.auction?.currentPrice}</p>
-				<label>
-					Your bid
-					<input
-					type="number"
-					min="0.01"
-					step="0.01"
-					value={bidAmount}
-					onChange={(e) => setBidAmount(e.target.value)}
-					disabled={isPlacingBid}
-					/>
-				</label>
-				{bidError ? <p style={{ color: 'red' }}>{bidError}</p> : null}
-				{bidSuccess ? <p style={{ color: 'green' }}>{bidSuccess}</p> : null}
-				<div className="modal-actions">
-					<button type="button" onClick={closeBidModal} disabled={isPlacingBid}>Cancel</button>
-					<button type="button" onClick={() => void handlePlaceBid()} disabled={isPlacingBid}>
-					{isPlacingBid ? 'Placing...' : 'Confirm bid'}
-					</button>
-				</div>
-				</div>
-			</div>
-			</div>
-		) : null}
-		</section>
-	)
+      {itemsError ? <p>{itemsError}</p> : null}
+
+      {!itemsError ? (
+        items.length > 0 ? (
+          <div className="item-grid">
+            {items.map((item) => (
+              <article key={item.id} className="item-card">
+                <Link to={`/item/${item.id}`} className="item-card-thumbnail-link">
+                  <ItemThumbnail image={item.images[0]} title={item.title} />
+                </Link>
+                <div className="item-card-body">
+                  <h3><Link to={`/item/${item.id}`}>{item.title}</Link></h3>
+                  <p>{item.description}</p>
+                </div>
+                <div className="item-card-meta">
+                  <span>Category: {ITEM_CATEGORY_LABELS[item.category]}</span>
+                  <span>Condition: {item.condition}/10</span>
+                  {item.auction ? (
+                    <>
+                      <span>Start price: ${item.auction.startPrice}</span>
+                      <span>Current price: ${item.auction.currentPrice}</span>
+                      <span>Status: {item.auction.status}</span>
+                      <span>Ends: {new Date(item.auction.endDate).toLocaleString()}</span>
+                    </>
+                  ) : (
+                    <span>No auction</span>
+                  )}
+                </div>
+                {item.auction ? (
+                  <div className="item-card-actions">
+                    <Link className="btn button-secondary" to={`/auction/${item.auction.id}/chat`}>
+  						Enter chat room
+					</Link>
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p>{profile.username} has no listings yet.</p>
+        )
+      ) : null}
+    </section>
+  )
 }
+
 export default PublicProfilePage

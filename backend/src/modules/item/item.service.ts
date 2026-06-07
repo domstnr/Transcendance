@@ -1,17 +1,41 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+    Logger,
+    NotFoundException,
+} from '@nestjs/common';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { basename, join } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { AuctionService } from '../auction/auction.service';
 
+const MAX_ITEM_IMAGES = 5;
+const ITEM_IMAGE_EXTENSIONS: Record<string, string> = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/webp': '.webp',
+};
+
 @Injectable()
 export class ItemService {
+    private readonly logger = new Logger(ItemService.name);
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly auctionService: AuctionService,
     ) {}
 
-    private readonly itemSummarySelect = {
+    private readonly itemImageSelect = {
+        id: true,
+        url: true,
+        position: true,
+    } as const;
+
+    private readonly itemBaseSelect = {
         id: true,
         sellerId: true,
         title: true,
@@ -20,14 +44,44 @@ export class ItemService {
         category: true,
         createdAt: true,
         updatedAt: true,
+    } as const;
+
+    private readonly auctionSummarySelect = {
+        id: true,
+        startPrice: true,
+        currentPrice: true,
+        status: true,
+        endDate: true,
+    } as const;
+
+    private readonly itemSummarySelect = {
+        ...this.itemBaseSelect,
+        images: {
+            orderBy: { position: 'asc' as const },
+            take: 1,
+            select: this.itemImageSelect,
+        },
         auction: {
+            select: this.auctionSummarySelect,
+        },
+    } as const;
+
+    private readonly itemDetailsSelect = {
+        ...this.itemBaseSelect,
+        seller: {
             select: {
                 id: true,
-                startPrice: true,
-                currentPrice: true,
-                status: true,
-                endDate: true,
+                username: true,
+                avatarUrl: true,
+                isOnline: true,
             },
+        },
+        images: {
+            orderBy: { position: 'asc' as const },
+            select: this.itemImageSelect,
+        },
+        auction: {
+            select: this.auctionSummarySelect,
         },
     } as const;
 
@@ -56,16 +110,7 @@ export class ItemService {
                     condition: dto.condition,
                     category: dto.category,
                 },
-                select: {
-                    id: true,
-                    sellerId: true,
-                    title: true,
-                    description: true,
-                    condition: true,
-                    category: true,
-                    createdAt: true,
-                    updatedAt: true,
-                },
+                select: this.itemBaseSelect,
             });
 
             const auction = await this.auctionService.createForItem(tx, {
@@ -77,6 +122,7 @@ export class ItemService {
 
             return {
                 ...item,
+                images: [],
                 auction,
             };
         });
@@ -85,7 +131,7 @@ export class ItemService {
     async findById(itemId: string) {
         const item = await this.prisma.item.findUnique({
             where: { id: itemId },
-            select: this.itemSummarySelect,
+            select: this.itemDetailsSelect,
         });
 
         if (!item) {
@@ -96,13 +142,115 @@ export class ItemService {
     }
 
     async assertSellerOwnsItem(itemId: string, sellerId: string) {
-        const item = await this.findById(itemId);
+        const item = await this.prisma.item.findUnique({
+            where: { id: itemId },
+            select: { sellerId: true },
+        });
 
-        if (item.sellerId !== sellerId) {
-            throw new ForbiddenException('You cannot access another seller item.');
+        if (!item) {
+            throw new NotFoundException(`Item ${itemId} not found.`);
         }
 
-        return item;
+        if (item.sellerId !== sellerId) {
+            throw new ForbiddenException('You cannot modify another seller item.');
+        }
+    }
+
+    async addImages(
+        itemId: string,
+        sellerId: string,
+        files: Express.Multer.File[],
+    ) {
+        await this.assertSellerOwnsItem(itemId, sellerId);
+
+        if (files.length === 0) {
+            throw new BadRequestException('At least one image must be provided.');
+        }
+
+        const existingImages = await this.prisma.itemImage.findMany({
+            where: { itemId },
+            orderBy: { position: 'asc' },
+            select: { position: true },
+        });
+
+        if (existingImages.length + files.length > MAX_ITEM_IMAGES) {
+            throw new BadRequestException(`An item can have at most ${MAX_ITEM_IMAGES} images.`);
+        }
+
+        const imageDirectory = this.getItemImageDirectory(itemId);
+        await mkdir(imageDirectory, { recursive: true });
+
+        const nextPosition =
+            existingImages.length === 0
+                ? 0
+                : existingImages[existingImages.length - 1].position + 1;
+
+        const pendingImages = files.map((file, index) => {
+            const extension = ITEM_IMAGE_EXTENSIONS[file.mimetype];
+
+            if (!extension) {
+                throw new BadRequestException('Unsupported image type.');
+            }
+
+            const filename = `${randomUUID()}${extension}`;
+
+            return {
+                itemId,
+                url: `/uploads/items/${itemId}/${filename}`,
+                position: nextPosition + index,
+                path: join(imageDirectory, filename),
+                buffer: file.buffer,
+            };
+        });
+
+        try {
+            await Promise.all(
+                pendingImages.map((image) => writeFile(image.path, image.buffer, { flag: 'wx' })),
+            );
+
+            return await this.prisma.$transaction(
+                pendingImages.map((image) =>
+                    this.prisma.itemImage.create({
+                        data: {
+                            itemId: image.itemId,
+                            url: image.url,
+                            position: image.position,
+                        },
+                        select: this.itemImageSelect,
+                    }),
+                ),
+            );
+        } catch (error) {
+            await Promise.all(
+                pendingImages.map((image) => rm(image.path, { force: true })),
+            );
+            throw error;
+        }
+    }
+
+    async deleteImage(itemId: string, imageId: string, sellerId: string) {
+        await this.assertSellerOwnsItem(itemId, sellerId);
+
+        const image = await this.prisma.itemImage.findFirst({
+            where: { id: imageId, itemId },
+            select: { id: true, url: true },
+        });
+
+        if (!image) {
+            throw new NotFoundException(`Image ${imageId} not found for item ${itemId}.`);
+        }
+
+        await this.prisma.itemImage.delete({
+            where: { id: image.id },
+        });
+
+        const imagePath = join(this.getItemImageDirectory(itemId), basename(image.url));
+
+        try {
+            await rm(imagePath, { force: true });
+        } catch (error) {
+            this.logger.warn(`Failed to remove item image file ${imagePath}: ${String(error)}`);
+        }
     }
 
     async updateOwnedItem(itemId: string, sellerId: string, dto: UpdateItemDto) {
@@ -150,5 +298,17 @@ export class ItemService {
                 where: { id: itemId },
             });
         });
+
+        const imageDirectory = this.getItemImageDirectory(itemId);
+
+        try {
+            await rm(imageDirectory, { recursive: true, force: true });
+        } catch (error) {
+            this.logger.warn(`Failed to remove item image directory ${imageDirectory}: ${String(error)}`);
+        }
+    }
+
+    private getItemImageDirectory(itemId: string) {
+        return join(process.cwd(), 'uploads', 'items', itemId);
     }
 }

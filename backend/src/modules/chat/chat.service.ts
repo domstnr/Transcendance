@@ -83,6 +83,7 @@ export class ChatService {
                 sender: {
                     select: {
                         username: true,
+                        avatarUrl: true,
                     },
                 },
             },
