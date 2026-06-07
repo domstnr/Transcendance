@@ -1,13 +1,24 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { ITEM_CATEGORIES, ITEM_CATEGORY_LABELS, type ItemCategory } from '../item/categoryOptions'
-import { createItem, deleteItem, getCurrentUserItems, updateItem } from '../item/itemService'
-import type { ItemSummary } from '../item/types'
+import ItemThumbnail from '../item/ItemThumbnail'
+import {
+    createItem,
+    deleteItem,
+    getCurrentUserItems,
+    getItem,
+    updateItem,
+    uploadItemImages,
+} from '../item/itemService'
+import type { ItemImage, ItemSummary } from '../item/types'
 
 type ItemModalMode = 'create' | 'edit' | null
 
 const ASSET_URL = ''
+const MAX_ITEM_IMAGES = 5
+const MAX_ITEM_IMAGE_SIZE = 10 * 1024 * 1024
+const ALLOWED_ITEM_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 function ProfilePage() {
     const { user } = useAuth()
@@ -23,6 +34,10 @@ function ProfilePage() {
     const [category, setCategory] = useState<ItemCategory>('OTHER')
     const [startPrice, setStartPrice] = useState('')
     const [endDate, setEndDate] = useState('')
+    const [imageFiles, setImageFiles] = useState<File[]>([])
+    const [imagePreviews, setImagePreviews] = useState<string[]>([])
+    const [existingImages, setExistingImages] = useState<ItemImage[]>([])
+    const [isLoadingItemImages, setIsLoadingItemImages] = useState(false)
     const [modalError, setModalError] = useState<string | null>(null)
     const [isSavingItem, setIsSavingItem] = useState(false)
     const [deletingItemId, setDeletingItemId] = useState<string | null>(null)
@@ -34,6 +49,15 @@ function ProfilePage() {
 
         void loadItems()
     }, [user])
+
+    useEffect(() => {
+        const previews = imageFiles.map((file) => URL.createObjectURL(file))
+        setImagePreviews(previews)
+
+        return () => {
+            previews.forEach((preview) => URL.revokeObjectURL(preview))
+        }
+    }, [imageFiles])
 
     const itemCount = items.length
 
@@ -59,6 +83,9 @@ function ProfilePage() {
         setCategory('OTHER')
         setStartPrice('')
         setEndDate('')
+        setImageFiles([])
+        setExistingImages([])
+        setIsLoadingItemImages(false)
         setModalMode('create')
     }
 
@@ -71,7 +98,22 @@ function ProfilePage() {
         setCategory(item.category)
         setStartPrice('')
         setEndDate('')
+        setImageFiles([])
+        setExistingImages(item.images)
         setModalMode('edit')
+        void loadItemImages(item.id)
+    }
+
+    async function loadItemImages(itemId: string) {
+        try {
+            setIsLoadingItemImages(true)
+            const response = await getItem(itemId)
+            setExistingImages(response.item.images)
+        } catch (error) {
+            setModalError(error instanceof Error ? error.message : 'Failed to load item images.')
+        } finally {
+            setIsLoadingItemImages(false)
+        }
     }
 
     function closeModal() {
@@ -81,7 +123,38 @@ function ProfilePage() {
 
         setModalMode(null)
         setSelectedItem(null)
+        setImageFiles([])
+        setExistingImages([])
         setModalError(null)
+    }
+
+    function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
+        const selectedFiles = Array.from(event.target.files ?? [])
+        event.target.value = ''
+
+        if (selectedFiles.some((file) => !ALLOWED_ITEM_IMAGE_TYPES.has(file.type))) {
+            setModalError('Only JPEG, PNG and WebP images are allowed.')
+            return
+        }
+
+        if (selectedFiles.some((file) => file.size > MAX_ITEM_IMAGE_SIZE)) {
+            setModalError('Each image must be 10 MB or smaller.')
+            return
+        }
+
+        if (existingImages.length + imageFiles.length + selectedFiles.length > MAX_ITEM_IMAGES) {
+            setModalError(`An item can have at most ${MAX_ITEM_IMAGES} images.`)
+            return
+        }
+
+        setModalError(null)
+        setImageFiles((currentFiles) => [...currentFiles, ...selectedFiles])
+    }
+
+    function removeSelectedImage(indexToRemove: number) {
+        setImageFiles((currentFiles) =>
+            currentFiles.filter((_file, index) => index !== indexToRemove),
+        )
     }
 
     async function handleItemSubmit(event: FormEvent<HTMLFormElement>) {
@@ -112,6 +185,10 @@ function ProfilePage() {
                     condition: parsedCondition,
                     category,
                 })
+
+                if (imageFiles.length > 0) {
+                    await uploadItemImages(selectedItem.id, imageFiles)
+                }
             } else {
                 const parsedStartPrice = Number(startPrice)
 
@@ -127,7 +204,7 @@ function ProfilePage() {
                     return
                 }
 
-                await createItem({
+                const response = await createItem({
                     title: trimmedTitle,
                     description: trimmedDescription,
                     condition: parsedCondition,
@@ -135,11 +212,30 @@ function ProfilePage() {
                     startPrice: parsedStartPrice,
                     endDate: new Date(endDate).toISOString(),
                 })
+
+                if (imageFiles.length > 0) {
+                    try {
+                        await uploadItemImages(response.item.id, imageFiles)
+                    } catch (error) {
+                        await loadItems()
+                        setSelectedItem(response.item)
+                        setExistingImages([])
+                        setModalMode('edit')
+                        setModalError(
+                            `Listing created, but images were not uploaded. ${
+                                error instanceof Error ? error.message : 'Please retry.'
+                            }`,
+                        )
+                        return
+                    }
+                }
             }
 
             await loadItems()
             setModalMode(null)
             setSelectedItem(null)
+            setImageFiles([])
+            setExistingImages([])
             setModalError(null)
         } catch (error) {
             setModalError(error instanceof Error ? error.message : 'Failed to save item.')
@@ -222,8 +318,11 @@ function ProfilePage() {
             <div className="item-grid">
               {items.map((item) => (
                 <article key={item.id} className="item-card">
+                  <Link to={`/item/${item.id}`} className="item-card-thumbnail-link">
+                    <ItemThumbnail image={item.images[0]} title={item.title} />
+                  </Link>
                   <div className="item-card-body">
-                    <h3>{item.title}</h3>
+                    <h3><Link to={`/item/${item.id}`}>{item.title}</Link></h3>
                     <p>{item.description}</p>
                   </div>
                   <div className="item-card-meta">
@@ -358,13 +457,57 @@ function ProfilePage() {
                   </>
                 ) : null}
 
+                <label>
+                  Images
+                  <input
+                    type="file"
+                    className="form-control"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    onChange={handleImageSelection}
+                    disabled={isSavingItem || isLoadingItemImages}
+                  />
+                  <small>
+                    JPEG, PNG or WebP. Maximum {MAX_ITEM_IMAGES} images, 10 MB each.
+                  </small>
+                </label>
+
+                {isLoadingItemImages ? <p>Loading existing images...</p> : null}
+
+                {existingImages.length > 0 || imagePreviews.length > 0 ? (
+                  <div className="item-image-previews">
+                    {existingImages.map((image) => (
+                      <figure key={image.id} className="item-image-preview">
+                        <img src={`${ASSET_URL}${image.url}`} alt="Current item" />
+                        <figcaption>Current</figcaption>
+                      </figure>
+                    ))}
+                    {imagePreviews.map((preview, index) => (
+                      <figure key={preview} className="item-image-preview">
+                        <img src={preview} alt={`Selected upload ${index + 1}`} />
+                        <button
+                          type="button"
+                          onClick={() => removeSelectedImage(index)}
+                          disabled={isSavingItem}
+                        >
+                          Remove
+                        </button>
+                      </figure>
+                    ))}
+                  </div>
+                ) : null}
+
                 {modalError ? <p className="alert alert-danger modal-error-message" role="alert">{modalError}</p> : null}
 
                 <div className="modal-actions">
                   <button type="button" className="btn item-button item-button--cancel" onClick={closeModal} disabled={isSavingItem}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn item-button item-button--primary" disabled={isSavingItem}>
+                  <button
+                    type="submit"
+                    className="btn item-button item-button--primary"
+                    disabled={isSavingItem || isLoadingItemImages}
+                  >
                     {isSavingItem ? (modalMode === 'edit' ? 'Saving...' : 'Creating...') : (modalMode === 'edit' ? 'Save changes' : 'Create listing')}
                   </button>
                 </div>

@@ -11,6 +11,7 @@ import FriendRequestsPage from './features/friends/FriendRequestsPage'
 import UserSearchPage from './features/friends/UserSearchPage'
 import PublicProfilePage from './features/profile/PublicProfilePage'
 import StatusPage from './features/health/StatusPage'
+import ItemDetailsPage from './features/item/ItemDetailsPage'
 import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage'
 import TermsOfServicePage from './features/legal/TermsOfServicePage'
 import './App.css'
@@ -74,6 +75,14 @@ function App() {
         element={
           <ProtectedRoute>
             <PublicProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/item/:itemId"
+        element={
+          <ProtectedRoute>
+            <ItemDetailsPage />
           </ProtectedRoute>
         }
       />

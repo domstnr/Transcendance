@@ -6,13 +6,10 @@ import {
     WebSocketServer } from "@nestjs/websockets";
 import { BaseComponent } from "../../core/bus/base.component";
 import { Server, Socket } from "socket.io";
-import { Logger, UseGuards } from "@nestjs/common";
+import { Logger } from "@nestjs/common";
 import { EventBus } from '../../core/bus/event.service';
 import { EventType } from "../../core/bus/event.types";
 import { AuctionState } from "./auction.state";
-import { WsJwtGuard } from "../auth/guards/ws-jwt.guard";
-import { AuthenticatedSocket } from "../auth/interfaces/auth-socket.interface";
-import { BidPlacedEvent } from "./events/bid-placed.event";
 
 
 
@@ -35,36 +32,18 @@ export class AuctionGateway extends BaseComponent {
     protected setupSubscriptions(): void {
         this.logger.log(`Bid viewer gateway init, listening to bus... `);
 
-        //bus listen for event, AUCTION_UPDATING
         this.listen<AuctionState>(EventType.AUCTION_UPDATED, (state: AuctionState) => {
-            this.logger.log(`Diffuse new bid ${state.id}`);
+            this.logger.log(`Broadcast auction update ${state.id}: ${state.status}`);
             this.server.to(state.id).emit('bidUpdated', {
                 newPrice: state.currentPrice,
                 bidderId: state.highestBidderId,
                 bidderName: state.highestBidderName || 'A user',
+                status: state.status,
+                version: state.version,
+                endDate: state.endDate,
                 timestamp: new Date(),
             });
         });
-    }
-
-    @UseGuards(WsJwtGuard)
-    @SubscribeMessage('placeBid')
-    async handlePlaceBid(
-        @MessageBody() data: { auctionId: string; amount: number },
-        @ConnectedSocket() client: AuthenticatedSocket,
-    ) {
-        const user = client.user;
-        await this.eventBus.publish(new BidPlacedEvent({
-            auctionId: data.auctionId,
-            userId: user.userId,
-            username: user.username,
-            amount: data.amount,
-        }));
-
-        return {
-            status: 'success',
-            message: 'Bid authenticated & sent to queue',
-        };
     }
 
     @SubscribeMessage('joinAuction')
