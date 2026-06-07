@@ -5,7 +5,7 @@ import { disableTwoFactor, enableTwoFactor, setupTwoFactor, updateCurrentUser, u
 import type { UpdateProfileRequest } from './types'
 import { changePassword } from '../auth/authService'
 
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+const ASSET_URL = ''
 
 function UpdateProfilePage() {
     const { user, refreshUser } = useAuth()
@@ -193,7 +193,7 @@ function UpdateProfilePage() {
               {user.avatarUrl ? (
                 <img
                   className="profile-avatar profile-avatar-small"
-                  src={`${API_URL}${user.avatarUrl}`}
+                  src={`${ASSET_URL}${user.avatarUrl}`}
                   alt="Current avatar"
                 />
               ) : (

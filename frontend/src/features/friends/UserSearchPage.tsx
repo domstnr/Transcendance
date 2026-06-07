@@ -4,13 +4,13 @@ import axios from 'axios'
 import { searchUsers, sendFriendRequest } from './friendsService'
 import type { UserSearchResult } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+const ASSET_URL = ''
 
 function Avatar({ username, avatarUrl }: { username: string; avatarUrl: string | null }) {
     return (
         <span className="friend-avatar">
             {avatarUrl
-                ? <img src={`${API_URL}${avatarUrl}`} alt={username} />
+                ? <img src={`${ASSET_URL}${avatarUrl}`} alt={username} />
                 : username[0].toUpperCase()
             }
         </span>

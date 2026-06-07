@@ -7,7 +7,8 @@ import { placeBid } from '../auction/auctionService'
 import type { ItemSummary } from '../item/types'
 import type { PublicUser } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+const API_URL = import.meta.env.VITE_API_URL || '/api'
+const ASSET_URL = ''
 
 function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>()
@@ -104,7 +105,7 @@ function PublicProfilePage() {
 			<h1>{profile.username}'s profile</h1>
 			{profile.avatarUrl ? (
 				<img
-				src={`${API_URL}${profile.avatarUrl}`}
+				src={`${ASSET_URL}${profile.avatarUrl}`}
 				alt="Avatar"
 				style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
 				/>

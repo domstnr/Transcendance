@@ -3,7 +3,7 @@ import type {
 	HealthResponse,
 } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 function StatusPage() {
 	const [health, setHealth] = useState<HealthResponse | null>(null)

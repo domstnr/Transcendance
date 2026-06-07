@@ -4,13 +4,13 @@ import { useAuth } from '../auth/AuthContext'
 import { getMessages } from './chatService'
 import { useChat } from './useChat'
 
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+const ASSET_URL = ''
 
 function Avatar({ username, avatarUrl }: { username: string; avatarUrl: string | null }) {
     return (
         <span style={{ display: 'inline-flex', width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: '#ccc', alignItems: 'center', justifyContent: 'center', fontSize: 13, verticalAlign: 'middle' }}>
             {avatarUrl
-                ? <img src={`${API_URL}${avatarUrl}`} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                ? <img src={`${ASSET_URL}${avatarUrl}`} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 : username[0].toUpperCase()
             }
         </span>

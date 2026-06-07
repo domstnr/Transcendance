@@ -7,7 +7,7 @@ import type { ItemSummary } from '../item/types'
 
 type ItemModalMode = 'create' | 'edit' | null
 
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+const ASSET_URL = ''
 
 function ProfilePage() {
     const { user } = useAuth()
@@ -181,7 +181,7 @@ function ProfilePage() {
                 {user.avatarUrl ? (
                   <img
                     className="avatar-img"
-                    src={`${API_URL}${user.avatarUrl}`}
+                    src={`${ASSET_URL}${user.avatarUrl}`}
                     alt={`${user.username} avatar`}
                   />
                 ) : (

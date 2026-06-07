@@ -9,7 +9,7 @@ type RetryableRequestConfig = {
 const NON_REFRESHABLE_AUTH_PATHS = ['/auth/login', '/auth/register', '/auth/refresh'] as const
 
 const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? '',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
