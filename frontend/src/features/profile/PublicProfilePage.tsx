@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { ITEM_CATEGORY_LABELS } from '../item/categoryOptions'
+import ItemThumbnail from '../item/ItemThumbnail'
 import { getOtherUserItems } from '../item/itemService'
 import { placeBid } from '../auction/auctionService'
 import type { ItemSummary } from '../item/types'
@@ -129,10 +130,13 @@ function PublicProfilePage() {
 		{!itemsError ? (
 			items.length > 0 ? (
 			<div className="item-grid">
-				{items.map((item) => (
-				<article key={item.id} className="item-card">
-					<div className="item-card-body">
-					<h3>{item.title}</h3>
+					{items.map((item) => (
+					<article key={item.id} className="item-card">
+						<Link to={`/item/${item.id}`} className="item-card-thumbnail-link">
+							<ItemThumbnail image={item.images[0]} title={item.title} />
+						</Link>
+						<div className="item-card-body">
+					<h3><Link to={`/item/${item.id}`}>{item.title}</Link></h3>
 					<p>{item.description}</p>
 					</div>
 					<div className="item-card-meta">

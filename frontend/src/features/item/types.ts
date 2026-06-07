@@ -8,7 +8,20 @@ export type AuctionSummary = {
   endDate: string
 } | null
 
-export type ItemSummary = {
+export type ItemImage = {
+  id: string
+  url: string
+  position: number
+}
+
+export type ItemSeller = {
+  id: string
+  username: string
+  avatarUrl: string | null
+  isOnline: boolean
+}
+
+type ItemBase = {
   id: string
   sellerId: string
   title: string
@@ -17,11 +30,25 @@ export type ItemSummary = {
   category: ItemCategory
   createdAt: string
   updatedAt: string
+}
+
+export type ItemSummary = ItemBase & {
+  images: ItemImage[]
+  auction: AuctionSummary
+}
+
+export type ItemDetails = ItemBase & {
+  seller: ItemSeller
+  images: ItemImage[]
   auction: AuctionSummary
 }
 
 export type GetMyItemsResponse = {
   items: ItemSummary[]
+}
+
+export type GetItemResponse = {
+  item: ItemDetails
 }
 
 export type CreateItemRequest = {
@@ -42,23 +69,7 @@ export type UpdateItemRequest = {
 
 export type CreateItemResponse = {
   message: string
-  item: {
-    id: string
-    sellerId: string
-    title: string
-    description: string
-    condition: number
-    category: ItemCategory
-    createdAt: string
-    updatedAt: string
-    auction: {
-      id: string
-      startPrice: number
-      currentPrice: number
-      status: string
-      endDate: string
-    }
-  }
+  item: ItemSummary
 }
 
 export type UpdateItemResponse = {
@@ -67,5 +78,14 @@ export type UpdateItemResponse = {
 }
 
 export type DeleteItemResponse = {
+  message: string
+}
+
+export type UploadItemImagesResponse = {
+  message: string
+  images: ItemImage[]
+}
+
+export type DeleteItemImageResponse = {
   message: string
 }

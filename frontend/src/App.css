@@ -32,11 +32,44 @@
 .item-card {
   border: 1px solid currentColor;
   border-radius: 14px;
-  padding: 1rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   min-height: 180px;
+  overflow: hidden;
+}
+
+.item-card-thumbnail {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.item-card-thumbnail-link {
+  display: block;
+}
+
+.item-card-thumbnail-placeholder {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.55);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 55%),
+    rgba(255, 255, 255, 0.04);
+  font-size: 0.9rem;
+}
+
+.item-card-body,
+.item-card-meta,
+.item-card-actions {
+  margin-inline: 1rem;
+}
+
+.item-card-actions {
+  margin-bottom: 1rem;
 }
 
 .item-card-body h3 {
@@ -74,6 +107,8 @@
 .modal-panel {
   width: min(100%, 560px);
   min-height: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
   background: #1f1f1f;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 18px;
@@ -105,4 +140,165 @@
 .modal-form textarea {
   resize: vertical;
   min-height: 140px;
+}
+
+.item-image-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+}
+
+.item-image-preview {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.item-image-preview img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.item-image-preview figcaption {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.item-details-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  gap: 2.5rem;
+  text-align: left;
+}
+
+.item-details-gallery,
+.item-details-content {
+  min-width: 0;
+}
+
+.item-details-main-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: block;
+  object-fit: contain;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.item-details-image-placeholder {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.55);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 55%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.item-details-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.item-details-thumbnails button {
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 10px;
+}
+
+.item-details-thumbnails button.is-selected {
+  border-color: currentColor;
+}
+
+.item-details-thumbnails img {
+  width: 100%;
+  aspect-ratio: 1;
+  display: block;
+  object-fit: cover;
+}
+
+.item-details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.item-details-content h1,
+.item-details-content p {
+  margin-top: 0;
+}
+
+.item-details-category {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.item-details-description {
+  white-space: pre-wrap;
+}
+
+.item-details-seller {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.item-details-seller > img,
+.item-details-seller > span {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 1.25rem;
+}
+
+.item-details-seller > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-details-auction {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.item-details-auction div {
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+}
+
+.item-details-auction dt {
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.item-details-auction dd {
+  margin: 0.3rem 0 0;
+  font-weight: 700;
+}
+
+.item-details-bidding {
+  min-height: 140px;
+  padding: 1.25rem;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+}
+
+@media (max-width: 760px) {
+  .item-details-page {
+    grid-template-columns: 1fr;
+  }
 }
