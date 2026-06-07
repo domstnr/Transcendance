@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { getMessages } from './chatService'
 import { useChat } from './useChat'
@@ -71,7 +71,7 @@ function ChatPage() {
                         <div key={msg.id} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Avatar username={msg.sender.username} avatarUrl={msg.sender.avatarUrl} />
                             <span>
-                                <strong>{msg.sender.username}</strong>
+                                <Link to={`/user/${msg.senderId}`}><strong>{msg.sender.username}</strong></Link>
                                 {user?.userId === msg.senderId ? ' (you)' : ''}
                                 {': '}
                                 {msg.content}
