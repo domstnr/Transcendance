@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { ITEM_CATEGORY_LABELS } from '../item/categoryOptions'
 import { getOtherUserItems } from '../item/itemService'
@@ -149,11 +149,14 @@ function PublicProfilePage() {
 						<span>No auction</span>
 					)}
 					</div>
-					{!isOwnProfile && item.auction?.status === 'OPEN' ? (
+					{item.auction ? (
 					<div className="item-card-actions">
+						{!isOwnProfile && item.auction.status === 'OPEN' ? (
 						<button type="button" onClick={() => openBidModal(item)}>
-						Place Bid
+							Place Bid
 						</button>
+						) : null}
+						<Link to={`/auction/${item.auction.id}/chat`}>Enter chat room</Link>
 					</div>
 					) : null}
 				</article>

@@ -68,8 +68,8 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-      .setTitle('Transcendance API')
-      .setDescription('Public API for the Transcendance marketplace')
+      .setTitle('Transauction API')
+      .setDescription('Public API for the Transauction project')
       .setVersion('1.0')
       .addApiKey({ type: 'apiKey', in: 'header', name: 'x-api-key' }, 'api-key')
       .addSecurityRequirements('api-key')

@@ -22,6 +22,7 @@ function ChatPage() {
     const { user } = useAuth()
     const [input, setInput] = useState('')
     const [isLoadingHistory, setIsLoadingHistory] = useState(true)
+    const [accessError, setAccessError] = useState<string | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
 
     const { messages, setMessages, isConnected, error, sendMessage } = useChat(auctionId!)
@@ -31,7 +32,8 @@ function ChatPage() {
             try {
                 const data = await getMessages(auctionId!)
                 setMessages(data.message.reverse())
-            } catch {
+            } catch (err) {
+                setAccessError(err instanceof Error ? err.message : 'Access denied')
             } finally {
                 setIsLoadingHistory(false)
             }
@@ -52,8 +54,8 @@ function ChatPage() {
         setInput('')
     }
 
-    if (error) {
-        return <p>{error}</p>
+    if (accessError ?? error) {
+        return <p>{accessError ?? error}</p>
     }
 
     return (
