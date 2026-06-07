@@ -196,7 +196,7 @@ function ProfilePage() {
               <p className="profile-text">
                 <span className="profile-label">User ID:</span> {user.userId}
               </p>
-              <button type="button" className="button btn-update" onClick={() => navigate('/profile/update')}>
+              <button type="button" className="btn btn-primary button btn-update" onClick={() => navigate('/profile/update')}>
                 Update profile
               </button>
             </div>
@@ -205,7 +205,7 @@ function ProfilePage() {
 
         <div className="profile-section-header">
           <h2>My items</h2>
-          <button type="button" className="button-secondary" onClick={openCreateModal}>
+          <button type="button" className="btn button-secondary" onClick={openCreateModal}>
             New
           </button>
         </div>
@@ -213,7 +213,7 @@ function ProfilePage() {
         {(isItemsLoading || itemsError) && (
           <div className="items-status">
             {isItemsLoading ? <p>Loading your items...</p> : null}
-            {itemsError ? <p className="error-message">{itemsError}</p> : null}
+            {itemsError ? <p className="alert alert-danger error-message" role="alert">{itemsError}</p> : null}
           </div>
         )}
 
@@ -240,12 +240,12 @@ function ProfilePage() {
                     )}
                   </div>
                   <div className="item-card-actions">
-                    <button type="button" className="item-button item-button--primary" onClick={() => openEditModal(item)}>
+                    <button type="button" className="btn item-button item-button--primary" onClick={() => openEditModal(item)}>
                       Edit
                     </button>
                     <button
                       type="button"
-                      className="item-button item-button--danger"
+                      className="btn item-button item-button--danger"
                       onClick={() => void handleDeleteItem(item)}
                       disabled={deletingItemId === item.id}
                     >
@@ -280,6 +280,7 @@ function ProfilePage() {
                   Title
                   <input
                     type="text"
+                    className="form-control"
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     maxLength={120}
@@ -290,6 +291,7 @@ function ProfilePage() {
                 <label>
                   Description
                   <textarea
+                    className="form-control"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     rows={5}
@@ -301,6 +303,7 @@ function ProfilePage() {
                   Condition (1-10)
                   <input
                     type="number"
+                    className="form-control"
                     min="1"
                     max="10"
                     step="1"
@@ -313,6 +316,7 @@ function ProfilePage() {
                 <label>
                   Category
                   <select
+                    className="form-control"
                     value={category}
                     onChange={(event) => setCategory(event.target.value as ItemCategory)}
                   >
@@ -330,6 +334,7 @@ function ProfilePage() {
                       Start price
                       <input
                         type="number"
+                        className="form-control"
                         min="0.01"
                         step="0.01"
                         value={startPrice}
@@ -342,6 +347,7 @@ function ProfilePage() {
                       Auction end date
                       <input
                         type="datetime-local"
+                        className="form-control"
                         value={endDate}
                         onChange={(event) => setEndDate(event.target.value)}
                       />
@@ -349,13 +355,13 @@ function ProfilePage() {
                   </>
                 ) : null}
 
-                {modalError ? <p className="modal-error-message">{modalError}</p> : null}
+                {modalError ? <p className="alert alert-danger modal-error-message" role="alert">{modalError}</p> : null}
 
                 <div className="modal-actions">
-                  <button type="button" className="item-button item-button--cancel" onClick={closeModal} disabled={isSavingItem}>
+                  <button type="button" className="btn item-button item-button--cancel" onClick={closeModal} disabled={isSavingItem}>
                     Cancel
                   </button>
-                  <button type="submit" className="item-button item-button--primary" disabled={isSavingItem}>
+                  <button type="submit" className="btn item-button item-button--primary" disabled={isSavingItem}>
                     {isSavingItem ? (modalMode === 'edit' ? 'Saving...' : 'Creating...') : (modalMode === 'edit' ? 'Save changes' : 'Create listing')}
                   </button>
                 </div>

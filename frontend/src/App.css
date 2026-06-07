@@ -240,7 +240,8 @@ body {
 
 .field input,
 .field textarea,
-.field select {
+.field select,
+.form-control {
   width: 100%;
   padding: 12px 14px;
   border: 1px solid var(--border-input);
@@ -253,19 +254,22 @@ body {
 
 .field input::placeholder,
 .field textarea::placeholder,
-.field select::placeholder {
+.field select::placeholder,
+.form-control::placeholder {
   color: var(--color-text-muted);
 }
 
 .field input:hover,
 .field textarea:hover,
-.field select:hover {
+.field select:hover,
+.form-control:hover {
   border-color: var(--border-hover);
 }
 
 .field input:focus,
 .field textarea:focus,
-.field select:focus {
+.field select:focus,
+.form-control:focus {
   border-color: var(--color-secondary);
   box-shadow: var(--focus-primary);
   background: var(--bg-focus);
@@ -279,6 +283,15 @@ body {
   font-size: 0.92rem;
   line-height: 1.4;
   margin: 4px 0 0;
+}
+
+.alert.text-error,
+.alert.text-success,
+.alert.modal-error-message,
+.alert.error-message {
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 #message-2,

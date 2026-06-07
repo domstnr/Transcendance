@@ -141,9 +141,9 @@ function UpdateProfilePage() {
                 />
               </label>
               {avatarFile ? <div className="file-name">{avatarFile.name}</div> : null}
-              {avatarError ? <div className="text-error">{avatarError}</div> : null}
-              {avatarMessage ? <div className="text-success">{avatarMessage}</div> : null}
-              <button type="submit" className="button" disabled={isAvatarSubmitting}>
+              {avatarError ? <div className="alert alert-danger text-error" role="alert">{avatarError}</div> : null}
+              {avatarMessage ? <div className="alert alert-success text-success" role="alert">{avatarMessage}</div> : null}
+              <button type="submit" className="btn btn-primary button" disabled={isAvatarSubmitting}>
                 {isAvatarSubmitting ? 'uploading...' : 'upload avatar'}
               </button>
             </div>
@@ -156,14 +156,15 @@ function UpdateProfilePage() {
               <input
                 id="username"
                 type="text"
+                className="form-control"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
                 autoComplete="username"
                 placeholder="Username"
               />
-              {profileError ? <div className="text-error">{profileError}</div> : null}
-              {profileMessage ? <div className="text-success">{profileMessage}</div> : null}
-              <button type="submit" className="button" disabled={isProfileSubmitting}>
+              {profileError ? <div className="alert alert-danger text-error" role="alert">{profileError}</div> : null}
+              {profileMessage ? <div className="alert alert-success text-success" role="alert">{profileMessage}</div> : null}
+              <button type="submit" className="btn btn-primary button" disabled={isProfileSubmitting}>
                 {isProfileSubmitting ? 'updating...' : 'update'}
               </button>
             </div>
@@ -176,6 +177,7 @@ function UpdateProfilePage() {
               <input
                 id="currentPassword"
                 type="password"
+                className="form-control"
                 value={currentPassword}
                 onChange={(event) => setCurrentPassword(event.target.value)}
                 autoComplete="current-password"
@@ -186,6 +188,7 @@ function UpdateProfilePage() {
               <input
                 id="newPassword"
                 type="password"
+                className="form-control"
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
                 autoComplete="new-password"
@@ -196,15 +199,16 @@ function UpdateProfilePage() {
               <input
                 id="confirmNewPassword"
                 type="password"
+                className="form-control"
                 value={confirmNewPassword}
                 onChange={(event) => setConfirmNewPassword(event.target.value)}
                 autoComplete="new-password"
                 placeholder="Confirm new password"
               />
 
-              {passwordError ? <div className="text-error">{passwordError}</div> : null}
-              {passwordMessage ? <div className="text-success">{passwordMessage}</div> : null}
-              <button type="submit" className="button" disabled={isPasswordSubmitting}>
+              {passwordError ? <div className="alert alert-danger text-error" role="alert">{passwordError}</div> : null}
+              {passwordMessage ? <div className="alert alert-success text-success" role="alert">{passwordMessage}</div> : null}
+              <button type="submit" className="btn btn-primary button" disabled={isPasswordSubmitting}>
                 {isPasswordSubmitting ? 'updating...' : 'change password'}
               </button>
             </div>
