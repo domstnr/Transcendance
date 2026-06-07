@@ -2,6 +2,7 @@ export type AuthUser = {
     userId: string
     username: string
     avatarUrl: string | null
+    twoFactorEnabled: boolean
 }
 
 export type LoginRequest = {
@@ -9,11 +10,19 @@ export type LoginRequest = {
     password: string
 }
 
-export type LoginResponse = {
-    status: string
+export type LoginSuccessResponse = {
+    status: 'success'
     message: string
     user: AuthUser
 }
+
+export type LoginTwoFactorResponse = {
+    status: '2fa_required'
+    message: string
+    tempToken: string
+}
+
+export type LoginResponse = LoginSuccessResponse | LoginTwoFactorResponse
 
 export type RegisterRequest = {
     email: string

@@ -7,6 +7,7 @@ import { WsJwtGuard } from "./guards/ws-jwt.guard";
 import { UserModule } from "../user/user.module";
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
+import { TwoFactorService } from './two-factor.service';
 
 @Module({
     imports: [HttpModule, ConfigModule, UserModule,
@@ -18,6 +19,7 @@ import { ConfigModule } from '@nestjs/config';
     controllers: [AuthController],
     providers: [
         AuthService,
+        TwoFactorService,
         JwtStrategy,
         WsJwtGuard,
     ],

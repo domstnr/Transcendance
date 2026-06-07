@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { ITEM_CATEGORY_LABELS } from '../item/categoryOptions'
 import { getOtherUserItems } from '../item/itemService'
 import { placeBid } from '../auction/auctionService'
+import { getFriends, sendFriendRequest } from '../friends/friendsService'
 import type { ItemSummary } from '../item/types'
 import type { PublicUser } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const API_URL = import.meta.env.VITE_API_URL || '/api'
+const ASSET_URL = ''
 
 function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>()
@@ -22,14 +24,20 @@ function PublicProfilePage() {
 	const [bidError, setBidError] = useState<string | null>(null)
 	const [isPlacingBid, setIsPlacingBid] = useState(false)
 	const [bidSuccess, setBidSuccess] = useState<string | null>(null)
+	const [isFriend, setIsFriend] = useState(false)
+	const [requestSent, setRequestSent] = useState(false)
+	const [isSendingRequest, setIsSendingRequest] = useState(false)
+	const [friendError, setFriendError] = useState<string | null>(null)
 
 	useEffect(() => {
 		if (!userId) return
 
 		async function load() {
 			try {
-				const [userRes, itemsRes] = await Promise.all([fetch(`${API_URL}/user/${userId}`, { credentials: 'include' }), 
+				const [userRes, itemsRes, friends] = await Promise.all([
+					fetch(`${API_URL}/user/${userId}`, { credentials: 'include' }),
 					getOtherUserItems(userId!),
+					getFriends(),
 				])
 
 				if (!userRes.ok) {
@@ -40,6 +48,7 @@ function PublicProfilePage() {
 				}
 
 				setItems(itemsRes.items)
+				setIsFriend(friends.some((f) => f.id === userId))
 			} catch {
 				setItemsError('Failed to load profile.')
 			} finally {
@@ -48,6 +57,19 @@ function PublicProfilePage() {
 		}
 		void load()
 	}, [userId])
+
+	async function handleSendFriendRequest() {
+		setIsSendingRequest(true)
+		setFriendError(null)
+		try {
+			await sendFriendRequest(userId!)
+			setRequestSent(true)
+		} catch (err) {
+			setFriendError(err instanceof Error ? err.message : 'Failed to send request.')
+		} finally {
+			setIsSendingRequest(false)
+		}
+	}
 
 	async function handlePlaceBid() {
 		if (!bidModalItem?.auction) return
@@ -104,7 +126,7 @@ function PublicProfilePage() {
 			<h1>{profile.username}'s profile</h1>
 			{profile.avatarUrl ? (
 				<img
-				src={`${API_URL}${profile.avatarUrl}`}
+				src={`${ASSET_URL}${profile.avatarUrl}`}
 				alt="Avatar"
 				style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover' }}
 				/>
@@ -117,6 +139,18 @@ function PublicProfilePage() {
 				<span style={{ color: profile.isOnline ? 'green' : 'gray' }}>●</span>
 				{' '}{profile.isOnline ? 'Online' : 'Offline'}
 			</p>
+			{!isOwnProfile && (
+				isFriend ? (
+					<p>Already friends</p>
+				) : requestSent ? (
+					<p>Friend request sent</p>
+				) : (
+					<button type="button" onClick={() => void handleSendFriendRequest()} disabled={isSendingRequest}>
+						{isSendingRequest ? 'Sending...' : 'Send friend request'}
+					</button>
+				)
+			)}
+			{friendError ? <p style={{ color: 'red' }}>{friendError}</p> : null}
 			</div>
 		</div>
 
@@ -149,11 +183,14 @@ function PublicProfilePage() {
 						<span>No auction</span>
 					)}
 					</div>
-					{!isOwnProfile && item.auction?.status === 'OPEN' ? (
+					{item.auction ? (
 					<div className="item-card-actions">
+						{!isOwnProfile && item.auction.status === 'OPEN' ? (
 						<button type="button" onClick={() => openBidModal(item)}>
-						Place Bid
+							Place Bid
 						</button>
+						) : null}
+						<Link to={`/auction/${item.auction.id}/chat`}>Enter chat room</Link>
 					</div>
 					) : null}
 				</article>

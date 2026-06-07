@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { getMessages } from './chatService'
 import { useChat } from './useChat'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const ASSET_URL = ''
 
 function Avatar({ username, avatarUrl }: { username: string; avatarUrl: string | null }) {
     return (
         <span style={{ display: 'inline-flex', width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: '#ccc', alignItems: 'center', justifyContent: 'center', fontSize: 13, verticalAlign: 'middle' }}>
             {avatarUrl
-                ? <img src={`${API_URL}${avatarUrl}`} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                ? <img src={`${ASSET_URL}${avatarUrl}`} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 : username[0].toUpperCase()
             }
         </span>
@@ -22,6 +22,7 @@ function ChatPage() {
     const { user } = useAuth()
     const [input, setInput] = useState('')
     const [isLoadingHistory, setIsLoadingHistory] = useState(true)
+    const [accessError, setAccessError] = useState<string | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
 
     const { messages, setMessages, isConnected, error, sendMessage } = useChat(auctionId!)
@@ -31,7 +32,8 @@ function ChatPage() {
             try {
                 const data = await getMessages(auctionId!)
                 setMessages(data.message.reverse())
-            } catch {
+            } catch (err) {
+                setAccessError(err instanceof Error ? err.message : 'Access denied')
             } finally {
                 setIsLoadingHistory(false)
             }
@@ -52,8 +54,8 @@ function ChatPage() {
         setInput('')
     }
 
-    if (error) {
-        return <p>{error}</p>
+    if (accessError ?? error) {
+        return <p>{accessError ?? error}</p>
     }
 
     return (
@@ -69,7 +71,7 @@ function ChatPage() {
                         <div key={msg.id} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Avatar username={msg.sender.username} avatarUrl={msg.sender.avatarUrl} />
                             <span>
-                                <strong>{msg.sender.username}</strong>
+                                <Link to={`/user/${msg.senderId}`}><strong>{msg.sender.username}</strong></Link>
                                 {user?.userId === msg.senderId ? ' (you)' : ''}
                                 {': '}
                                 {msg.content}

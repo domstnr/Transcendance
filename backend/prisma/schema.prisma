@@ -42,12 +42,14 @@ model User {
   sentRequests     Friendship[]        @relation("SentRequests")
   receivedRequests Friendship[]        @relation("ReceivedRequests")
   apiKeys          ApiKey[]
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
 }
 
 model Item {
   id          String   @id @default(uuid())
   sellerId    String
-  seller      User     @relation("ItemSeller", fields: [sellerId], references: [id])
+  seller      User     @relation("ItemSeller", fields: [sellerId], references: [id], onDelete: Cascade)
   title       String
   description String
   condition   Int
@@ -60,13 +62,13 @@ model Item {
 model Auction{
   id              String    @id
   itemId          String    @unique
-  item            Item      @relation(fields: [itemId], references: [id])
+  item            Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
   sellerId        String
-  seller          User      @relation("AuctionSeller", fields: [sellerId], references: [id])
+  seller          User      @relation("AuctionSeller", fields: [sellerId], references: [id], onDelete: Cascade)
   startPrice      Float
   currentPrice    Float
   highestBidderId String?
-  highestBidder   User?     @relation("AuctionHighestBidder", fields: [highestBidderId], references: [id])
+  highestBidder   User?     @relation("AuctionHighestBidder", fields: [highestBidderId], references: [id], onDelete: SetNull)
   status          String    @default("OPEN") //CLOSED OR OPEN
   version         Int       @default(0)
   endDate         DateTime
@@ -85,8 +87,8 @@ model Bid {
   status      String  // 'ACCEPTED', 'REJECTED', etc.
   createdAt   DateTime  @default(now())
 
-  auction     Auction   @relation(fields: [auctionId], references:  [id])
-  user        User      @relation("BidderBids", fields: [userId], references: [id])
+  auction     Auction   @relation(fields: [auctionId], references:  [id], onDelete: Cascade)
+  user        User      @relation("BidderBids", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum FriendshipStatus {
@@ -113,9 +115,9 @@ model Message {
   content    String
   createdAt  DateTime @default(now())
   auctionId  String
-  auction    Auction  @relation(fields: [auctionId], references: [id])
+  auction    Auction  @relation(fields: [auctionId], references: [id], onDelete: Cascade)
   senderId   String
-  sender     User     @relation(fields: [senderId], references: [id])
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
   mediaUrl   String?
   isOffer    Boolean  @default(false)
   offerPrice Float?
@@ -126,9 +128,9 @@ model Message {
 model ChatParticipation {
   id         String   @id @default(uuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   auctionId  String
-  auction    Auction  @relation(fields: [auctionId], references: [id])
+  auction    Auction  @relation(fields: [auctionId], references: [id], onDelete: Cascade)
   lastReadAt DateTime @default(now())
 
   @@unique([userId, auctionId])

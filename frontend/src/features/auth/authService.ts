@@ -4,6 +4,7 @@ import type {
     ChangePasswordResponse,
     LoginRequest,
     LoginResponse,
+    LoginSuccessResponse,
     RegisterRequest,
     RegisterResponse,
     GitHubCodeRequest,
@@ -16,6 +17,18 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
         return response.data
     } catch (error) {
         throw new Error(extractHttpErrorMessage(error) ?? 'error: request failed')
+    }
+}
+
+export async function verifyTwoFactorLogin(tempToken: string, code: string): Promise<LoginSuccessResponse> {
+    try {
+        const response = await httpClient.post<LoginSuccessResponse>('/auth/2fa/verify-login', {
+            tempToken,
+            code,
+        })
+        return response.data
+    } catch (error) {
+        throw new Error(extractHttpErrorMessage(error) ?? 'error: 2FA verification failed')
     }
 }
 

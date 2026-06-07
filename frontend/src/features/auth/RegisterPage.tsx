@@ -77,6 +77,7 @@ function RegisterPage() {
                 <input
                   id="username"
                   type="text"
+                  className="form-control"
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
                   autoComplete="username"
@@ -89,6 +90,7 @@ function RegisterPage() {
                 <input
                   id="email"
                   type="email"
+                  className="form-control"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   autoComplete="email"
@@ -101,6 +103,7 @@ function RegisterPage() {
                 <input
                   id="password"
                   type="password"
+                  className="form-control"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   autoComplete="new-password"
@@ -108,12 +111,12 @@ function RegisterPage() {
                 />
               </div>
 
-              {error ? <div id="error-2">{error}</div> : null}
-              {message ? <div id="message-2">{message}</div> : null}
+              {error ? <div id="error-2" className="alert alert-danger" role="alert">{error}</div> : null}
+              {message ? <div id="message-2" className="alert alert-success" role="alert">{message}</div> : null}
 
-            <button id="button" type="button" onClick={handleGitHubRegister}>Login with GitHub</button>
+              <button id="button" type="button" onClick={handleGitHubRegister}>Login with GitHub</button>
 
-              <button id="button" type="submit" disabled={isSubmitting}>
+              <button id="button" type="submit" className="btn btn-primary" disabled={isSubmitting}>
                 {isSubmitting ? 'Création...' : 'Register'}
               </button>
             </div>

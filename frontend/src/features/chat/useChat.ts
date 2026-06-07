@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import type { ChatMessage } from './types'
 
-const SOCKET_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const SOCKET_URL = import.meta.env.VITE_API_URL ?? ''
 
 export function useChat(auctionId: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([])
