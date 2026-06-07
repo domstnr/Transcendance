@@ -153,11 +153,13 @@ function PublicProfilePage() {
 					{item.auction ? (
 					<div className="item-card-actions">
 						{!isOwnProfile && item.auction.status === 'OPEN' ? (
-						<button type="button" onClick={() => openBidModal(item)}>
+						<button type="button" className="btn item-button item-button--primary" onClick={() => openBidModal(item)}>
 							Place Bid
 						</button>
 						) : null}
-						<Link to={`/auction/${item.auction.id}/chat`}>Enter chat room</Link>
+						<Link className="btn button-secondary" to={`/auction/${item.auction.id}/chat`}>
+							Enter chat room
+						</Link>
 					</div>
 					) : null}
 				</article>
