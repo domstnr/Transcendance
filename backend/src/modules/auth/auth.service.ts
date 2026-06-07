@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ConflictException,
     Injectable,
     Logger,
     NotFoundException,
@@ -169,36 +170,15 @@ export class AuthService {
     }
 
     async findOrCreateGitHubUser(email: string, username: string) {
-        let user = await this.userService.findByEmail(email);
-        if (!user) {
-            const randomHash = await this.hashPassword(`${Date.now()}_${Math.random()}`);
-            let finalUsername = username;
-            try {
-                await this.userService.checkUserExists(email, finalUsername);
-            } catch {
-                finalUsername = `${username}_gh`;
-            }
-            const newUser = await this.userService.createUser(email, finalUsername, randomHash);
-            await this.eventBus.publish({
-                type: EventType.USER_REGISTERED,
-                timestamp: Date.now(),
-                payload: { userId: newUser.id, email: newUser.email, username: newUser.username },
-            });
-            user = await this.userService.findByEmail(email);
-        }
-        const tokens = await this.generateTokens(user!.id, user!.username);
-        return {
-            status: 'success' as const,
-            message: 'Login successful.',
-            user: {
-                userId: user!.id,
-                username: user!.username,
-                avatarUrl: user!.avatarUrl ?? null,
-                twoFactorEnabled: user!.twoFactorEnabled,
-            },
-            tokens,
-        };
+    const password = `${email}:${username}:github`;
+    try {
+        await this.register({ email, username, password });
+    } catch (e) {
+        if (!(e instanceof ConflictException)) throw e;
     }
+    return this.login({ email, password });
+}
+
 
     private async exchangeCodeForToken(code: string): Promise<string> {
         const clientId = this.configService.get<string>('VITE_GITHUB_CLIENT_ID');
