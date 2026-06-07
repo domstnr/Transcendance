@@ -1,4 +1,4 @@
-import { 
+import {
     Body,
     Req,
     Controller,
@@ -8,7 +8,6 @@ import {
     Res,
     Patch,
     UseGuards,
-    ConflictException,
     NotFoundException
 } from "@nestjs/common";
 import { Request, Response } from "express";
@@ -18,13 +17,12 @@ import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshDto } from "./dto/refresh.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
-import { UserService } from "../user/user.service";
+import { GitHubCodeDto } from "./dto/github-code.dto";
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
-        private readonly userService: UserService,
     ) {}
 
     /* -------------------------------------------------------------------------- */
@@ -117,32 +115,10 @@ export class AuthController {
         console.log('A user is trying to login with github: ', codeDto.code);
         const gitData = await this.authService.handleGitHubCode(codeDto);
         if (gitData.username == undefined)
-        {
             throw new NotFoundException("Failed to fetch username!");
-        }
         if (gitData.email == undefined)
-        {
             throw new NotFoundException("Failed to fetch email!");
-        }
-        try
-        {
-            const registerDto: RegisterDto = {
-                username: gitData.username,
-                email: gitData.email,
-                password: '1234567890GitMasterPass...'
-            };
-            await this.authService.register(registerDto);
-        }
-        catch (error: unknown)
-        {
-            if (!(error instanceof ConflictException))
-                throw error;
-        }
-        const loginDto: LoginDto = {
-            email: gitData.email,
-            password: '1234567890GitMasterPass...'
-        };
-        const response = await this.authService.login(loginDto);
+        const response = await this.authService.findOrCreateGitHubUser(gitData.email, gitData.username);
         setAuthCookies(res, response.tokens.accessToken, response.tokens.refreshToken);
         return response;
     }

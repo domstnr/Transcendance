@@ -4,7 +4,6 @@ import {
     Logger,
     NotFoundException,
     UnauthorizedException,
-    ConflictException
 } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
@@ -16,6 +15,7 @@ import { EventBus } from "../../core/bus/event.service";
 import { EventType } from "../../core/bus/event.types";
 import { UserService } from "../user/user.service";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { GitHubCodeDto } from "./dto/github-code.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { TwoFactorService } from './two-factor.service';
@@ -162,10 +162,42 @@ export class AuthService {
         const { code } = codeDto;
         const accessToken = await this.exchangeCodeForToken(code);
         if (accessToken == undefined)
-            return;
+            throw new BadRequestException('Failed to exchange GitHub code for access token.');
         const user = await this.fetchGitHubUser(accessToken);
         const email = await this.fetchGitHubUserEmail(accessToken);
         return {username: user, email: email };
+    }
+
+    async findOrCreateGitHubUser(email: string, username: string) {
+        let user = await this.userService.findByEmail(email);
+        if (!user) {
+            const randomHash = await this.hashPassword(`${Date.now()}_${Math.random()}`);
+            let finalUsername = username;
+            try {
+                await this.userService.checkUserExists(email, finalUsername);
+            } catch {
+                finalUsername = `${username}_gh`;
+            }
+            const newUser = await this.userService.createUser(email, finalUsername, randomHash);
+            await this.eventBus.publish({
+                type: EventType.USER_REGISTERED,
+                timestamp: Date.now(),
+                payload: { userId: newUser.id, email: newUser.email, username: newUser.username },
+            });
+            user = await this.userService.findByEmail(email);
+        }
+        const tokens = await this.generateTokens(user!.id, user!.username);
+        return {
+            status: 'success' as const,
+            message: 'Login successful.',
+            user: {
+                userId: user!.id,
+                username: user!.username,
+                avatarUrl: user!.avatarUrl ?? null,
+                twoFactorEnabled: user!.twoFactorEnabled,
+            },
+            tokens,
+        };
     }
 
     private async exchangeCodeForToken(code: string): Promise<string> {
