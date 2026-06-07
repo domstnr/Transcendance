@@ -18,6 +18,7 @@ import { diskStorage } from "multer";
 import { extname } from "path";
 import { randomUUID } from "crypto";
 import { JwtAuthGuard } from "../auth/strategies/jwt-auth.guard";
+import { ApiKeyGuard } from "../api_key/api-key.guard";
 import { UserService } from "./user.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
@@ -110,6 +111,12 @@ export class UserController {
     async searchUsers(@Req() req: RequestWithUser, @Query('q') q: string) {
         if (!q || q.trim().length < 2) return [];
         return this.userService.searchUsers(q.trim(), req.user.userId);
+    }
+
+    @Get('all')
+    @UseGuards(ApiKeyGuard)
+    async getAllUsers() {
+        return this.userService.getAllUsers();
     }
 
     @Delete('me')

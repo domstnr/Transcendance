@@ -11,6 +11,8 @@ import FriendRequestsPage from './features/friends/FriendRequestsPage'
 import UserSearchPage from './features/friends/UserSearchPage'
 import PublicProfilePage from './features/profile/PublicProfilePage'
 import StatusPage from './features/health/StatusPage'
+import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage'
+import TermsOfServicePage from './features/legal/TermsOfServicePage'
 import './App.css'
 
 function App() {
@@ -76,6 +78,8 @@ function App() {
         }
       />
       <Route path="/status" element={<StatusPage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
       </Routes>
     </>
   )

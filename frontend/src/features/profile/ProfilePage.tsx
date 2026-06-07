@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { ITEM_CATEGORIES, ITEM_CATEGORY_LABELS, type ItemCategory } from '../item/categoryOptions'
 import { createItem, deleteItem, getCurrentUserItems, updateItem } from '../item/itemService'
@@ -251,6 +251,9 @@ function ProfilePage() {
                     >
                       {deletingItemId === item.id ? 'Deleting...' : 'Delete'}
                     </button>
+                    {item.auction ? (
+                      <Link to={`/auction/${item.auction.id}/chat`}>Enter chat room</Link>
+                    ) : null}
                   </div>
                 </article>
               ))}
