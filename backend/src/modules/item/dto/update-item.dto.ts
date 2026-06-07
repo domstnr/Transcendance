@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsDateString, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ITEM_CATEGORIES, type ItemCategory } from '../item-category';
 
 export class UpdateItemDto {
@@ -24,4 +24,8 @@ export class UpdateItemDto {
     @IsString()
     @IsIn(ITEM_CATEGORIES, { message: 'category must be one of the supported listing categories.' })
     category?: ItemCategory;
+
+    @IsOptional()
+    @IsDateString({}, { message: 'endDate must be a valid ISO date.' })
+    endDate?: string;
 }

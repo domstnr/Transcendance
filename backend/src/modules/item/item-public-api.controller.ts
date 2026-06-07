@@ -3,6 +3,7 @@ import { ItemService } from './item.service'
 import { ApiKeyGuard } from '../api_key/api-key.guard'
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { ApiBody } from '@nestjs/swagger';
 
 
 @Controller('public-api/item')
@@ -29,12 +30,35 @@ export class ItemPublicAPIController {
 	}
 
 	@Post()
+	@ApiBody({
+		schema: {
+			example: {
+				title: 'Gaming Laptop',
+				description: 'Barely used, runs everything smoothly',
+				condition: 8,
+				category: 'ELECTRONICS',
+				startPrice: 500.00,
+				endDate: '2026-12-31T00:00:00Z',
+			},
+		},
+	})
 	async createItem(@Body() CreateItemDto: CreateItemDto, @Request() req: any) {
 		const item = await this.itemService.createItem(req.user.userId, CreateItemDto)
 		return { message: 'Item created successfully', item }
 	}
 
 	@Put(':id')
+	@ApiBody({
+		schema: {
+			example: {
+				title: 'Updated title',
+				description: 'Updated description',
+				condition: 7,
+				category: 'ELECTRONICS',
+				endDate: '2026-12-31T00:00:00Z',
+			},
+		},
+	})
 	async updateItem(@Param('id') id: string, @Body() UpdateItemDto: UpdateItemDto, @Request() req: any) {
 		const item = await this.itemService.updateOwnedItem(id, req.user.userId, UpdateItemDto)
 		return { message: 'Item updated successfully', item }

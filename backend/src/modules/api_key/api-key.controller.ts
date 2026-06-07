@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common'
 import { ApiKeyService } from './api-key.service'
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard'
+import { ApiExcludeController } from '@nestjs/swagger'
 
+@ApiExcludeController()
 @Controller('api-keys')
 @UseGuards(JwtAuthGuard)
 export class ApiKeyController {

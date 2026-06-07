@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ItemService } from './item.service';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 const ALLOWED_ITEM_IMAGE_TYPES = new Set([
     'image/jpeg',
@@ -25,6 +26,7 @@ const ALLOWED_ITEM_IMAGE_TYPES = new Set([
     'image/webp',
 ]);
 
+@ApiExcludeController()
 @Controller('item')
 export class ItemController {
     constructor(private readonly itemService: ItemService) {}

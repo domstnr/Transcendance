@@ -274,14 +274,27 @@ export class ItemService {
             data.category = dto.category;
         }
 
-        if (Object.keys(data).length === 0) {
-            throw new BadRequestException('At least one item field must be provided.');
+        if (Object.keys(data).length === 0 && dto.endDate === undefined) {
+            throw new BadRequestException('At least one field must be provided.');
         }
 
-        return this.prisma.item.update({
-            where: { id: itemId },
-            data,
-            select: this.itemSummarySelect,
+        return this.prisma.$transaction(async (tx) => {
+            if (dto.endDate !== undefined) {
+                await tx.auction.updateMany({
+                    where: { itemId },
+                    data: { endDate: new Date(dto.endDate) },
+                });
+            }
+
+            if (Object.keys(data).length === 0) {
+                return tx.item.findUnique({ where: { id: itemId }, select: this.itemSummarySelect });
+            }
+
+            return tx.item.update({
+                where: { id: itemId },
+                data,
+                select: this.itemSummarySelect,
+            });
         });
     }
 

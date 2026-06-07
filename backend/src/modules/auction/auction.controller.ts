@@ -7,6 +7,9 @@ import {
     GetBidHistoryResponseDto,
     PlaceBidResponseDto,
 } from './dto/auction-response.dto';
+import { ApiExcludeController } from '@nestjs/swagger';
+
+@ApiExcludeController()
 @Controller('auctions')
 export class AuctionController
 {

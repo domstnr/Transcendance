@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { FriendsService } from './friends.service';
 import { FriendParamDto } from './dto/friend.dto';
 
@@ -19,6 +20,7 @@ interface RequestWithUser extends Request {
     user: { userId: string; username: string };
 }
 
+@ApiExcludeController()
 @Controller('friends')
 @UseGuards(JwtAuthGuard)
 export class FriendsController {

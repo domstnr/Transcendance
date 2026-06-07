@@ -18,7 +18,9 @@ import { LoginDto } from "./dto/login.dto";
 import { RefreshDto } from "./dto/refresh.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { GitHubCodeDto } from "./dto/github-code.dto";
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller('auth')
 export class AuthController {
     constructor(

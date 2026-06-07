@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query, Req, UseGuards } from "@nestjs/common";
 import type { Request } from "express";
 import { JwtAuthGuard } from "../auth/strategies/jwt-auth.guard";
 import { ChatService } from "./chat.service";
+import { ApiExcludeController } from '@nestjs/swagger';
 
 interface RequestWithUser extends Request {
     user: {
@@ -10,6 +11,7 @@ interface RequestWithUser extends Request {
     };
 }
 
+@ApiExcludeController()
 @Controller('chat')
 export class ChatController {
     constructor(private readonly chatService: ChatService) {}

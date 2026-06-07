@@ -21,6 +21,7 @@ import { OptionalJwtAuthGuard } from "../auth/strategies/optional-jwt-auth.guard
 import { ApiKeyGuard } from "../api_key/api-key.guard";
 import { UserService } from "./user.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { ApiExcludeController } from '@nestjs/swagger';
 
 interface RequestWithUser extends Request {
     user: {
@@ -30,6 +31,7 @@ interface RequestWithUser extends Request {
 }
 
 
+@ApiExcludeController()
 @Controller('user')
 export class UserController {
     private readonly logger = new Logger(UserController.name);
