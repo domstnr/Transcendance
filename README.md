@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by \<login1\>, \<login2\>, \<login3\>, \<login4\>.*
+*This project has been created as part of the 42 curriculum by pkurt, lcroxatt, kbaga, nvignal, razaccar*
 
 ---
 
@@ -82,11 +82,11 @@ AI was used during this project to assist in the making of placeholder pages to 
 
 | Member | Login | Role | Responsibilities |
 |--------|-------|------|-----------------|
-| Guy | nvignal | Product Owner / Developer | \<responsibilities\> |
-| Léo | lcroxatt | Project Manager / Developer | \<responsibilities\> |
-| Raphael | razaccar | Tech Lead / Developer | \<responsibilities\> |
-| Peter | pkurt | Developer | \<responsibilities\> |
-| Kenny | kbaga | Developer | \<responsibilities\> |
+| Guy | nvignal | Product Owner / Developer | Overviewer of the project, polishing  of the product |
+| Léo | lcroxatt | Project Manager / Developer | Organizer of the project, maintains team communication, plans meetings and regular checks. |
+| Raphael | razaccar | Tech Lead / Developer | Developer of main features and implicated in tech design choices. |
+| Peter | pkurt | Developer | Developer of features and overall assistance |
+| Kenny | kbaga | Developer | Developer of architecture/features and overall assistance |
 
 
 ---
@@ -204,7 +204,7 @@ Auction ──< ChatParticipation
 | Two-Factor Authentication (TOTP) | User Management | Minor | 1 | Account security in a marketplace has real stakes, someone hijacking your account could place bids or modify listings in your name. TOTP is the standard solution and works with any authenticator app | Guy |
 | Health check and status page system with automated backups and disaster recovery procedures | Devops | Minor | 1 | If the database goes down mid-auction, bids can be lost permanently. Automated backups and a live status page meant we could catch and recover from problems before they became serious | Léo |
 | Support for additional browsers (tested with Firefox, Brave, Opera GX) | Accessibility and Internationalization | Minor | 1 | We didn't want the site to break for someone just because they prefer a different browser. Testing across Firefox, Brave, and Opera GX covers both rendering engines | Everyone |
-| Real-time auction and bidding system, full auction lifecycle (OPEN/CLOSED states, end date enforcement), concurrent bid placement with optimistic locking to prevent race conditions, Redis write-behind caching for high-frequency bid updates, WebSocket broadcast of live price changes to all connected participants, per-auction bid history with ACCEPTED/REJECTED status, and automatic highest-bidder tracking | Gameplay and user experience | Major | 2 | This is the heart of the app. Getting concurrent bids right, no double-wins, no stale prices, no race conditions, required optimistic locking and Redis caching on top of WebSockets, which is exactly the kind of complexity that makes it worth calling a module | Raphael |
+| Real-time auction and bidding system, full auction lifecycle (OPEN/CLOSED states, end date enforcement), concurrent bid placement with optimistic locking to prevent race conditions, Redis write-behind caching for high-frequency bid updates, WebSocket broadcast of live price changes to all connected participants, per-auction bid history with ACCEPTED/REJECTED status, and automatic highest-bidder tracking | Gameplay and user experience | Major | 2 | This is the heart of the app. Getting concurrent bids right, no double-wins, no stale prices, no race conditions, required optimistic locking and Redis caching on top of WebSockets, which is exactly the kind of complexity that makes it worth calling a module | Raphael, Kenny |
 | **Total** | | | **17** | | |
 
 
@@ -215,6 +215,8 @@ Auction ──< ChatParticipation
 The public API uses API key authentication and is separate from the regular user-facing endpoints.
 
 **Step 1, Log in**
+
+Will not work if 2FA is active on the account.
 ```bash
 curl -k -c cookies.txt -X POST https://localhost:8443/api/auth/login \
   -H "Content-Type: application/json" \
