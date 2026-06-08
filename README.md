@@ -179,7 +179,7 @@ Auction ──< ChatParticipation
 | Public profiles | View another user's profile and their listings | Raphael, Guy |
 | Friends system | Send, accept, decline, cancel friend requests; remove friends | Léo, Guy |
 | Item listings | Create, view, and manage marketplace item listings | Raphael |
-| Real-time bidding | Place bids on live auctions via WebSocket with optimistic locking | Raphael |
+| Real-time bidding | Place bids on live concurrency safe auctions with optimistic locking | Raphael |
 | Auction chat | Per-auction chat room with persistent message history | Léo, Guy |
 | Public API | REST API secured by API key with rate limiting and Swagger docs | Léo |
 | Health status page | Live system status showing database and memory health | Léo |
@@ -298,6 +298,6 @@ To restore from a backup:
 |--------|--------------|
 | nvignal | Two-Factor Authentication (TOTP setup, QR code, enable/disable); user profile (view/edit); public user profiles; friends system (requests, accept/decline); auction chat; Privacy Policy and Terms of Service pages; Huge UI implication |
 | lcroxatt | Friends system; auction chat; public REST API (API key auth, rate limiting, Swagger docs, 6 endpoints); health status page; automated nightly backups with disaster recovery; real-time WebSockets (co-implemented) |
-| razaccar | Item listings (create/view/manage); real-time bidding system (WebSocket bids, optimistic locking, Redis write-behind cache); public profiles; user profile; password change; real-time WebSockets (co-implemented); standard user management (co-implemented) |
+| razaccar | Item listings (create/view/manage); auction/bidding system using HTTP for bid submission, PostgreSQL transaction and event driven WebSocket for real-time auction updates; public profiles; user profile; password change and standard user management (co-implemented) |
 | pkurt | Registration and login systems; GitHub OAuth 2.0 flow; ORM setup (Prisma schema, migrations) |
 | kbaga | Registration and login systems (co-implemented); ORM setup (Prisma, co-implemented); Event bus |
