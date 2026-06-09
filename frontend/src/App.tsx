@@ -16,6 +16,7 @@ import CallbackPage from './features/auth/GithubCallback.tsx'
 import ItemDetailsPage from './features/item/ItemDetailsPage'
 import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage'
 import TermsOfServicePage from './features/legal/TermsOfServicePage'
+import logo from './assets/transauction2.svg'
 import './App.css'
 
 function App() {
@@ -28,8 +29,21 @@ function App() {
         element={
           <ProtectedRoute>
             <section className="home-section">
-              <h1>Transcendance</h1>
-              <p>Marketplace platform coming soon.</p>
+              <img className="home-logo" src={logo} alt="Transauction" />
+              <div className="home-copy">
+                <p>
+                  Transauction is an auction website designed for friends. Its goal is to let users share, browse, and auction items in a simple and social space.
+                </p>
+                <p>
+                  In the Friends section, users can search for friends, add them, remove them, and access their items by clicking on their profile name. This makes it easy to see what friends are currently offering for auction.
+                </p>
+                <p>
+                  In the Profile section, users can manage their account, update their information, upload a profile picture, add their own items, and put them up for auction. Each user has a personal space to showcase their items and participate in auctions.
+                </p>
+                <p>
+                  A Marketplace section is planned for the future. It will include a search bar to help users find items and browse available auctions more easily.
+                </p>
+              </div>
             </section>
           </ProtectedRoute>
         }
