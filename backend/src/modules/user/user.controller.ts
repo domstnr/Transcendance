@@ -124,19 +124,6 @@ export class UserController {
         return this.userService.getAllUsers();
     }
 
-    @Delete('me')
-    @UseGuards(JwtAuthGuard)
-    async deleteCurrentUser(@Req() req: RequestWithUser) {
-        const deletedUser = await this.userService.deleteUser(req.user.userId);
-
-        this.logger.log(`Account deleted: ${deletedUser.username}`);
-
-        return {
-            status: 'success',
-            message: 'Your account has been deleted',
-        };
-    }
-
     @Get(':userId')
     @UseGuards(JwtAuthGuard)
     async getPublicProfile(@Param('userId') userId: string) {

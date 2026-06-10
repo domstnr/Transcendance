@@ -29,16 +29,14 @@ export class ChatService {
             }
         }
 
-        const participation = await this.prisma.chatParticipation.findUnique({
-            where: {
-                userId_auctionId: { userId, auctionId },
-            },
-        });
-
-        if (!participation) {
-            await this.prisma.chatParticipation.create({
-                data: { userId, auctionId },
+        try {
+            await this.prisma.chatParticipation.upsert({
+                where: { userId_auctionId: { userId, auctionId } },
+                create: { userId, auctionId },
+                update: {},
             });
+        } catch (error) {
+            console.error('ChatParticipation upsert failed:', error);
         }
 
         return true;
